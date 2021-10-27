@@ -72,8 +72,8 @@ def main ():
 	venues_file = "../data/venues.tsv"
 	keep_venues_file = "../data/keep_venues.txt"
 
-	num_cascades = 1000
-	events_per_cascade=100
+	num_cascades = 5000
+	events_per_cascade=500
 
 	# Read from file
 	with open (innovs_file, "rb") as fin:
