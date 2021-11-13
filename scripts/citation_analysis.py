@@ -61,10 +61,8 @@ def remap_citations (citations, venue_map, keep_venues):
 @click.option ('--venues-file', default='../data/venues.tsv', help='File contains the venue information')
 @click.option ('--keep-venues-file', default='../data/keep_venues.txt', help='Only keep these venues')
 @click.option ('--output-file', default='../data/inf-v1.001.csv', help='File contains citation and influence relations')
-@click.option ('--log-file', default='citation_analysis.log', help='File contains the log messages for citation analysis')
-def main (data_file, params_file, citations_file, venues_file, keep_venues_file, output_file, log_file):
+def main (data_file, params_file, citations_file, venues_file, keep_venues_file, output_file):
 	logging.basicConfig(
-		filename=log_file,
 		level=logging.INFO,
 		format= '[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
 		datefmt='%H:%M:%S'
@@ -107,13 +105,13 @@ def main (data_file, params_file, citations_file, venues_file, keep_venues_file,
 			keep_venues.add (line.strip())
 
 	new_citations = remap_citations (citations, venue_map, keep_venues)
-	logging.info (f'Number of citations before: {len(citations)}, number of citations later: {len (new_citations)}')
+	logging.info (f'Number of citations before: {len(citations)}, number of citations later: {len (new_citations)}.')
 
 	df = make_df (idx_channels, iidx_channels, coarse_hp_params, new_citations)
-	logging.info ('Influence relations...calcualated')
+	logging.info ('Influence relations...calculated.')
 
-	df.to_csv (output_file, sep='\t', index=False, header=True)
-	logging.info ('Influence relations...written')
+	df.to_csv (output_file, sep=',', index=False, header=True)
+	logging.info ('Influence relations...written.')
 
 if __name__ == "__main__":
 	main ()
