@@ -144,11 +144,9 @@ class DVHP:
 						   method='L-BFGS-B',
 						   jac=gradient,
 						   bounds=bounds,
-						   options={'ftol': 1e-10, "maxls": 50, "maxcor":50, "maxiter":500, "maxfun": 500, "disp": True})
+						   options={'ftol': 1e-5, "maxls": 50, "maxcor":50, "maxiter":5000, "maxfun": 5000, "disp": True})
 
-		mu = result.x[0*dims:1*dims]
-		alpha = result.x[dims:].reshape (dims * dims)
-		return mu,alpha	
+		return result
 
 class DCHP:
 	""" Discrete coarse hawkes process. """
@@ -244,10 +242,6 @@ class DCHP:
 						   method='L-BFGS-B',
 						   jac=gradient,
 						   bounds=bounds,
-						   options={'ftol': 1e-10, "maxls": 50, "maxcor":50, "maxiter":500, "maxfun": 500, "disp": True})
+						   options={'ftol': 1e-5, "maxls": 50, "maxcor":50, "maxiter":5000, "maxfun": 5000, "disp": True})
 
-		mu = result.x[0*dims:1*dims]
-		b = result.x[1*dims:2*dims]
-		c = result.x[2*dims:3*dims]
-		s = result.x[3*dims:4*dims]
-		return mu,b,c,s	
+		return result
