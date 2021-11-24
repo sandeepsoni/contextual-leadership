@@ -180,7 +180,7 @@ class DCHP:
 				last_sources = cascade[last_timestamp]
 				aggregator = np.zeros_like (mu)
 				for last_source in last_sources:
-					aggregator += ((b[last_source] * c) + se_gate[last_source,:])
+					aggregator += ((b[last_source] * c) + (s*se_gate[last_source,:]))
                     
 				eta = hputils.exp_kernel (timestamp, last_timestamp, bandwidth) * (eta + aggregator)
 
@@ -204,6 +204,7 @@ class DCHP:
 	@staticmethod
 	def log_likelihood_many_cascades (params, 
 									  cascades, 
+									  single_cascade_likelihood,
 									  bandwidth=1.0, 
 									  dims=5, 
 									  sign=-1.0, 
@@ -212,13 +213,13 @@ class DCHP:
 		n_cascades = len (cascades)
 		total_log_likelihood = 0.0
 		for i in range (n_cascades):
-			log_likelihood = DCHP.log_likelihood_single_cascade (params, \
-																 cascades[i], \
-																 bandwidth, \
-																 dims, \
-																 sign, \
-																 epsilon, \
-																 verbose)
+			log_likelihood = single_cascade_likelihood (params, \
+														cascades[i], \
+														bandwidth, \
+														dims, \
+														sign, \
+														epsilon, \
+														verbose)
 			total_log_likelihood += log_likelihood
 
 		if verbose: print (total_log_likelihood/n_cascades)
@@ -226,7 +227,9 @@ class DCHP:
 
 	@staticmethod
 	def estimate (cascades, 
-				  log_likelihood, 
+				  multiple_cascades_log_likelihood,
+				  single_cascade_log_likelihood, 
+				  log_optimizer=None,
 				  gradient=None, 
 				  bandwidth=1.0, 
 				  dims=5,
@@ -236,9 +239,9 @@ class DCHP:
 		params = np.random.uniform (0, 1, size=4*dims) # random initialization of the parameters
 		sign = -1.0 # Multiply so that we can minimize negative log likelihood
 		epsilon = 1e-5
-		result = minimize (log_likelihood,
+		result = minimize (multiple_cascades_log_likelihood,
 						   params,
-						   args=(cascades, bandwidth, dims, sign, epsilon, False),
+						   args=(cascades, single_cascade_log_likelihood, bandwidth, dims, sign, epsilon, False),
 						   method='L-BFGS-B',
 						   jac=gradient,
 						   bounds=bounds,
