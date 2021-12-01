@@ -208,7 +208,8 @@ class DCHP:
 									  bandwidth=1.0, 
 									  dims=5, 
 									  sign=-1.0, 
-									  epsilon=1e-5, 
+									  epsilon=1e-5,
+									  l2_coeff=0, 
 									  verbose=False):
 		n_cascades = len (cascades)
 		total_log_likelihood = 0.0
@@ -222,9 +223,11 @@ class DCHP:
 														verbose)
 			total_log_likelihood += log_likelihood
 
-		if verbose: print (total_log_likelihood/n_cascades)
-		return total_log_likelihood/n_cascades
-
+		total_log_likelihood = total_log_likelihood / n_cascades
+		total_log_likelihood += (l2_coeff * np.linalg.norm (params))
+		if verbose: print (total_log_likelihood)
+		return total_log_likelihood
+		
 	@staticmethod
 	def estimate (cascades, 
 				  multiple_cascades_log_likelihood,
@@ -233,6 +236,7 @@ class DCHP:
 				  gradient=None, 
 				  bandwidth=1.0, 
 				  dims=5,
+				  l2_coeff=0,
 				  seed=42):
 		np.random.seed (seed)
 		bounds = [(0,None) for i in range (4*dims)] # set the non-negativity bounds on the parameters
@@ -241,10 +245,10 @@ class DCHP:
 		epsilon = 1e-5
 		result = minimize (multiple_cascades_log_likelihood,
 						   params,
-						   args=(cascades, single_cascade_log_likelihood, bandwidth, dims, sign, epsilon, False),
+						   args=(cascades, single_cascade_log_likelihood, bandwidth, dims, sign, epsilon, l2_coeff, False),
 						   method='L-BFGS-B',
 						   jac=gradient,
 						   bounds=bounds,
-						   options={'ftol': 1e-5, "maxls": 50, "maxcor":50, "maxiter":5000, "maxfun": 5000, "disp": True})
+						   options={'ftol': 1e-5, "maxls": 50, "maxcor":50, "maxiter":15000, "maxfun": 15000, "disp": True})
 
 		return result

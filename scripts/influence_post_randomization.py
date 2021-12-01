@@ -22,6 +22,7 @@ def readArgs ():
 	parser.add_argument ("--params-file", type=str, required=True, help="The name of the file containing all the params")
 	parser.add_argument ("--bandwidth", type=float, required=False, default=2.0, help="Bandwidth parameter")
 	parser.add_argument ("--ncascades", type=int, required=False, default=None, help="The number of cascades to consider")
+	parser.add_argument ("--l2-coeff", type=float, required=False, default=0.0, help="L2 coeffient penalty")
 	parser.add_argument ("--seed", type=int, required=False, default=42, help="random seed")
 	args = parser.parse_args ()
 	return args
@@ -60,7 +61,7 @@ def main (args):
 	dims = len (idx)
 	logging.info (f'Number of channels in the cascades: {dims}')
 
-	result = hpmodels.DCHP.estimate (randomized_cascades, hpmodels.DCHP.log_likelihood_many_cascades, hpmodels.DCHP.log_likelihood_single_cascade, bandwidth=args.bandwidth, dims=dims, seed=42)
+	result = hpmodels.DCHP.estimate (randomized_cascades, hpmodels.DCHP.log_likelihood_many_cascades, hpmodels.DCHP.log_likelihood_single_cascade, bandwidth=args.bandwidth, dims=dims, l2_coeff=args.l2_coeff, seed=42)
 	
 	with open(args.params_file,'wb') as f: pickle.dump(result, f)
 	logging.info (f'Inference done, parameters written in file {args.params_file}')

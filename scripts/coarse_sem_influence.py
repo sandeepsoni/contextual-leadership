@@ -22,14 +22,11 @@ def readArgs ():
 	parser.add_argument ("--bandwidth", type=float, required=False, default=1.0, help="Bandwidth parameter")
 	parser.add_argument ("--seed", type=int, required=False, default=42, help="random seed")
 	parser.add_argument ("--train-percent", type=float, required=False, default=0.8, help="train percentage in a train-test split")
+	parser.add_argument ("--l2-coeff", type=float, required=False, default=0.0, help="L2 coefficient for the regularization")
 	args = parser.parse_args ()
 	return args
 
 def main (args):
-	# Constants
-	#data_file = "../data/data-v1.001.pkl"
-	#params_file = "../data/params-v1.005.pkl"
-
 	# Started program log message
 	logging.info (f'Script execution for optimization started')
 
@@ -47,15 +44,14 @@ def main (args):
 	
 	dims = len (idx)
 	logging.info (f'Number of channels in the cascades: {dims}')
-	mu,b,c,s = hpmodels.DCHP.estimate (train_cascades, hpmodels.DCHP.log_likelihood_many_cascades, bandwidth=args.bandwidth, dims=dims)
+	result = hpmodels.DCHP.estimate (train_cascades, hpmodels.DCHP.log_likelihood_many_cascades, hpmodels.DCHP.log_likelihood_single_cascade, bandwidth=args.bandwidth, dims=dims, l2_coeff=args.l2_coeff)
 
-	params = np.concatenate ((mu, b, c, s))
-	heldout_log_likelihood = hpmodels.DCHP.log_likelihood_many_cascades (params, test_cascades, bandwidth=args.bandwidth, dims=dims, sign=1.0)	
+	heldout_log_likelihood = hpmodels.DCHP.log_likelihood_many_cascades (result.x, test_cascades, hpmodels.DCHP.log_likelihood_single_cascade, bandwidth=args.bandwidth, dims=dims, sign=1.0)
 	logging.info (f'Held out log likelihood: {heldout_log_likelihood}')
 
-	mu,b,c,s = hpmodels.DCHP.estimate (cascades, hpmodels.DCHP.log_likelihood_many_cascades, bandwidth=args.bandwidth, dims=dims)
+	#result = hpmodels.DCHP.estimate (cascades, hpmodels.DCHP.log_likelihood_many_cascades, hpmodels.DCHP.log_likelihood_single_cascade, bandwidth=args.bandwidth, dims=dims)
 	
-	with open(args.params_file,'wb') as f: pickle.dump((mu, b, c, s), f)
+	with open(args.params_file,'wb') as f: pickle.dump(result, f)
 	logging.info (f'Coarsened HP inference done, parameters written in file {args.params_file}')
 	
 if __name__ == "__main__":
