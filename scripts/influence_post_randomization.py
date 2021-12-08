@@ -19,6 +19,7 @@ logging.basicConfig(
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Bandwidth grid search")
 	parser.add_argument ("--data-file", type=str, required=True, help="The name of the file containing all the data")
+	parser.add_argument ("--log-file", type=str, required=True, help="The name of the file containing all the logs")
 	parser.add_argument ("--params-file", type=str, required=True, help="The name of the file containing all the params")
 	parser.add_argument ("--bandwidth", type=float, required=False, default=2.0, help="Bandwidth parameter")
 	parser.add_argument ("--ncascades", type=int, required=False, default=None, help="The number of cascades to consider")
@@ -48,6 +49,12 @@ def randomize_cascades (cascades, seed):
 	return new_cascades	
 
 def main (args):
+	logging.basicConfig(
+		filename=args.log_file,
+		level=logging.INFO, 
+		format= '[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
+		datefmt='%H:%M:%S'
+	)
 	# Started program log message
 	logging.info (f'Script execution started')
 
@@ -55,8 +62,10 @@ def main (args):
 	with open (args.data_file, 'rb') as fin:
 		idx, iidx, cascades, innovs = pickle.load (fin)
 
+	logging.info (f"Randomizing cascades with {args.seed} seed")
 	# Randomize the cascades
 	randomized_cascades = randomize_cascades (cascades[0:args.ncascades], args.seed)
+	logging.info (f"Randomized {len(randomized_cascades)} cascades")
 	
 	dims = len (idx)
 	logging.info (f'Number of channels in the cascades: {dims}')
