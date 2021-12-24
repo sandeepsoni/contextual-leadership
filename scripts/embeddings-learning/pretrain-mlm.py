@@ -16,10 +16,6 @@ class LM (object):
 		self.tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, use_fast=True)
 		self.model = AutoModelForMaskedLM.from_pretrained(model_checkpoint)
 
-	def add_special_tokens (self, tokens):
-		self.tokenizer.add_tokens (tokens, special_tokens=True)
-		self.model.resize_token_embeddings (len(self.tokenizer))	
-
 def tokenize(examples, tokenizer):
 	return tokenizer(examples["full_text"])
 
@@ -75,15 +71,15 @@ def main (args):
 
 	training_args = TrainingArguments(
 		args.checkpoints_dir,
-		evaluation_strategy = "epoch",
+		#evaluation_strategy = "epoch",
 		num_train_epochs=args.num_train_epochs,
 		learning_rate=2e-5,
 		weight_decay=0.01,
 		save_steps=1000,
 		logging_steps=1000,
 		save_total_limit=10,
-		per_device_train_batch_size=16,
-		per_device_eval_batch_size=16,
+		per_device_train_batch_size=8,
+		#per_device_eval_batch_size=8,
 	)
 
 	data_collator = DataCollatorForLanguageModeling(tokenizer=lm.tokenizer, mlm_probability=0.15)
