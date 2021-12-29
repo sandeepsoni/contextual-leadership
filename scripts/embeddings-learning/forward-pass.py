@@ -88,30 +88,30 @@ def main (args):
 	#lm = LM ("../checkpoints/contextual-word-embeddings/checkpoint-9000/")
 	lm = LM (args.model_checkpoint)
 	with open (args.text_file) as fin, open (args.embeddings_file, "w") as fout:
-	for line in fin:
-		js = json.loads (line.strip())
-		# extract text
-		text = js["full_text"] # extract additional metadata for later
-		paper_id = js["paper_id"]
-		# encode the entire text
-		encoded_input = lm.tokenizer(text,
-									 add_special_tokens=False,
-									 return_tensors='pt')
+		for line in fin:
+			js = json.loads (line.strip())
+			# extract text
+			text = js["full_text"] # extract additional metadata for later
+			paper_id = js["paper_id"]
+			# encode the entire text
+			encoded_input = lm.tokenizer(text,
+										 add_special_tokens=False,
+										 return_tensors='pt')
+        	
+			with torch.no_grad ():
+				# print (encoded_input["input_ids"].size()) # contains approx. these many tokens
+				input_dict = split2chunks (encoded_input)
+				outputs = lm.model(**input_dict)
+				embeddings = get_flattened_embeddings (outputs, input_dict["attention_mask"])
+				wordpieces = lm.tokenizer.convert_ids_to_tokens(encoded_input["input_ids"][0])
+				tokens = [token for token in tokens_generator(wordpieces)]
+				tokenized_text = [token for _,_,token in tokens]
+				token_boundaries = [(start, ended) for start, ended, _ in tokens]
+				token_embeddings = torch.stack([embeddings[start:end,:].mean(dim=0) for start, end in token_boundaries])
         
-		with torch.no_grad ():
-			# print (encoded_input["input_ids"].size()) # contains approx. these many tokens
-            input_dict = split2chunks (encoded_input)
-			outputs = lm.model(**input_dict)
-			embeddings = get_flattened_embeddings (outputs, input_dict["attention_mask"])
-			wordpieces = lm.tokenizer.convert_ids_to_tokens(encoded_input["input_ids"][0])
-			tokens = [token for token in tokens_generator(wordpieces)]
-			tokenized_text = [token for _,_,token in tokens]
-			token_boundaries = [(start, ended) for start, ended, _ in tokens]
-			token_embeddings = torch.stack([embeddings[start:end,:].mean(dim=0) for start, end in token_boundaries])
-        
-		for i, token in enumerate (tokenized_text):
-			string_rep = ' '.join(list(map(str,token_embeddings[i].tolist())))
-			fout.write (f'{paper_id}\t{i}\t{token}\t{string_rep}\n')	
+			for i, token in enumerate (tokenized_text):
+				string_rep = ' '.join(list(map(str,token_embeddings[i].tolist())))
+				fout.write (f'{paper_id}\t{i}\t{token}\t{string_rep}\n')	
 
 if __name__ == "__main__":
 	main (readArgs ())
