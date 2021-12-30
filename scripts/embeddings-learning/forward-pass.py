@@ -54,7 +54,11 @@ def get_flattened_embeddings (outputs, attention_mask):
 							outputs.hidden_states[-3], #10th hidden layer
 							outputs.hidden_states[-4]), dim=2)
 	embeddings = torch.flatten (embeddings[:,1:-1,:], start_dim=0, end_dim=1)
-	index = (attention_mask[:,1:-1].flatten() == 0).nonzero(as_tuple=True)[0][0].item()
+	num_nonzero = (attention_mask[:,1:-1].flatten() == 0).nonzero(as_tuple=True)[0].size()[0]
+	if num_nonzero == 0:
+		index = None
+	else:
+		index = (attention_mask[:,1:-1].flatten() == 0).nonzero(as_tuple=True)[0][0].item()
 	return embeddings[0:index, :]
 
 def tokens_generator (toks):
