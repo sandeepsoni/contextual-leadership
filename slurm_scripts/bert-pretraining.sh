@@ -30,11 +30,12 @@
 
 #SBATCH --mail-type=all
 
+HOME_DIR=/global/home/users/sandeepsoni
+USERS_DIR=/global/scratch/users/sandeepsoni
+PROJECTS_DIR=$HOME_DIR/projects/hp-modeling
+SCRATCH_DIR=$USERS_DIR/projects/hp-modeling
 
-PROJECTS_DIR=/global/home/users/sandeepsoni/projects/hp-modeling
-SCRATCH_DIR=/global/scratch/users/sandeepsoni/projects/hp-modeling
-
-conda activate py39
+conda activate $USERS_DIR/envs/py39/
 export TRANSFORMERS_CACHE="/global/scratch/users/sandeepsoni/models/transformers" # Keep all the models in this directory
 export HF_DATASETS_CACHE="/global/scratch/users/sandeepsoni/datasets/transformers" # Keep all the datasets in this directory
 

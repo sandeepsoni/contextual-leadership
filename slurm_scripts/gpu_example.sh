@@ -29,12 +29,18 @@
 #SBATCH --mail-type=all
 
 
-source activate py39
+HOME_DIR=/global/home/users/sandeepsoni
+USERS_DIR=/global/scratch/users/sandeepsoni
+PROJECTS_DIR=$HOME_DIR/projects/hp-modeling
+SCRATCH_DIR=$USERS_DIR/projects/hp-modeling
 
-cd /global/home/users/sandeepsoni/projects/hp-modeling/scripts/examples
+conda activate $USERS_DIR/envs/py39/
+
+
+cd $PROJECTS_DIR/scripts/examples
 module load cuda/10.2
 hostname
 which python
 python torch_gpu_demo.py
 
-#source deactivate
+conda deactivate
