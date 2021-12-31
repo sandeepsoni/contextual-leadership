@@ -18,36 +18,36 @@ class LM (object):
 		self.tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, use_fast=True)
 		self.model = AutoModelForMaskedLM.from_pretrained(model_checkpoint, output_hidden_states=True)
 
-def split2chunks (encoded_input, split_len=510):
+def split2chunks (encoded_input, split_len=510, device='cpu'):
 	# Break into smaller chunks
 	input_ids_chunks = list(encoded_input['input_ids'][0].split(split_len))
 	mask_chunks = list(encoded_input['attention_mask'][0].split(split_len))
-    
+
 	for i in range (len (input_ids_chunks)):
-		pad_len = 510 - input_ids_chunks[i].shape[0]
+		pad_len = split_len - input_ids_chunks[i].shape[0]
 		# check if tensor length satisfies required chunk size
 		if pad_len > 0:
 			# if padding length is more than 0, we must add padding
 			input_ids_chunks[i] = torch.cat([
-				input_ids_chunks[i], torch.Tensor([0] * pad_len)
+				input_ids_chunks[i], torch.Tensor([0] * pad_len).to(device)
 			])
 			mask_chunks[i] = torch.cat([
-				mask_chunks[i], torch.Tensor([0] * pad_len)
+				mask_chunks[i], torch.Tensor([0] * pad_len).to(device)
 			])
 		# Append the CLS token (id=101) and the SEP token (id=102)
 		input_ids_chunks[i] = torch.cat([
-			torch.Tensor([101]), input_ids_chunks[i], torch.Tensor ([102])
+			torch.Tensor([101]).to(device), input_ids_chunks[i], torch.Tensor ([102]).to(device)
 		])
-            
+
 		# Add attention masks
 		mask_chunks[i] = torch.cat([
-			torch.Tensor([1]), mask_chunks[i], torch.Tensor([1])
+			torch.Tensor([1]).to(device), mask_chunks[i], torch.Tensor([1]).to(device)
 		])
         
 	# Now aggregate into one example
 	input_ids = torch.stack(input_ids_chunks)
 	attention_mask = torch.stack(mask_chunks)
-        
+
 	input_dict = {
 		'input_ids': input_ids.long().clone().detach(), #torch.tensor(input_ids.long()),
 		'attention_mask': attention_mask.int().clone().detach() #torch.tensor(attention_mask.int())
@@ -98,6 +98,8 @@ def readArgs ():
 def main (args):
 	#lm = LM ("../checkpoints/contextual-word-embeddings/checkpoint-9000/")
 	lm = LM (args.model_checkpoint)
+	device = "cuda:0" if torch.cuda.is_available() else "cpu"
+	lm.model.to(device)
 	with open (args.text_file) as fin, open (args.embeddings_file, "w") as fout:
 		j = 0
 		for line in tqdm (fin):
@@ -113,11 +115,11 @@ def main (args):
 			# encode the entire text
 			encoded_input = lm.tokenizer(text,
 										 add_special_tokens=False,
-										 return_tensors='pt')
+										 return_tensors='pt').to(device)
         	
 			with torch.no_grad ():
 				# print (encoded_input["input_ids"].size()) # contains approx. these many tokens
-				input_dict = split2chunks (encoded_input)
+				input_dict = split2chunks (encoded_input, device=device)
 				outputs = lm.model(**input_dict)
 				embeddings = get_flattened_embeddings (outputs, input_dict["attention_mask"])
 				wordpieces = lm.tokenizer.convert_ids_to_tokens(encoded_input["input_ids"][0])
