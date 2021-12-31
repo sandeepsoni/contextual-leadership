@@ -96,6 +96,8 @@ def main (args):
 			js = json.loads (line.strip())
 			# extract text
 			text = js["full_text"] # extract additional metadata for later
+			if len (text) == 0:
+				continue
 			paper_id = js["paper_id"]
 			# encode the entire text
 			encoded_input = lm.tokenizer(text,
