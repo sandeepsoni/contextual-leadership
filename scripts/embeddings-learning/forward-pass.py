@@ -4,6 +4,13 @@ from transformers import AutoModelForMaskedLM
 from transformers import AutoTokenizer
 import torch
 import json
+from tqdm import tqdm
+import logging
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S')
 
 class LM (object):
 	def __init__ (self, model_checkpoint):
@@ -92,7 +99,11 @@ def main (args):
 	#lm = LM ("../checkpoints/contextual-word-embeddings/checkpoint-9000/")
 	lm = LM (args.model_checkpoint)
 	with open (args.text_file) as fin, open (args.embeddings_file, "w") as fout:
-		for line in fin:
+		j = 0
+		for line in tqdm (fin):
+			j += 1
+			if j % 100 == 0:
+				logging.info (f'Currently processing {j}th line')
 			js = json.loads (line.strip())
 			# extract text
 			text = js["full_text"] # extract additional metadata for later
