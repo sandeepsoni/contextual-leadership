@@ -40,8 +40,6 @@ cd $PROJECTS_DIR/scripts/embeddings-learning/
 module load cuda/10.2
 hostname
 which python
-python forward-pass.py --text-file $SCRATCH_DIR/data/raw/sample.jsonl --model-checkpoint $SCRATCH_DIR/checkpoints/contextual-word-embeddings/checkpoint-9000 --embeddings-file $SCRATCH_DIR/data/contextual-embeddings/sample.tsv
-
 python single_file_token_embeddings.py --filenames $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks01.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks02.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks03.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks04.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks05.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks06.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks07.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks08.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks09.tsv $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks10.tsv --output-file $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_embeddings.tsv --metadata-file $SCRATCH_DIR/data/raw/s2orc_acl_p4.jsonl
 
 conda deactivate
