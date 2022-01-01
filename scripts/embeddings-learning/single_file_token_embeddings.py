@@ -34,7 +34,7 @@ def main (args):
 					output_string = "\t".join ([paper_id, str(year)] + parts[1:])
 					fout.write (f"{output_string}\n")
 
-					if (i+1) % 10000 == 0:
+					if (i+1) % 1000000 == 0:
 						logging.info (f"{i+1} tokens in {filename} processed")
 
 if __name__ == "__main__":
