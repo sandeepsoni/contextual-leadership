@@ -18,7 +18,7 @@ def readArgs ():
 
 def main (args):
 	paper_ids = dict ()
-	with open (args.metdata_file) as fin:
+	with open (args.metadata_file) as fin:
 		for line in fin:
 			js = json.loads (line)
 			if js["paper_id"] not in paper_ids:
