@@ -34,13 +34,13 @@ def main (args):
 		for line_no, line in enumerate (tqdm(fin)):
 			parts = line.strip().split("\t")
 			word, year = parts[3], parts[1]
-			word_subdir = os.path.join (args.embeddings_word_dir, word)
-			with open (os.path.join (word_subdir, f"{year}.tsv"), "a") as fout:
-				fout.write (line)
+			if word in words: # do this only if it is one of the candidates
+				word_subdir = os.path.join (args.embeddings_word_dir, word)
+				with open (os.path.join (word_subdir, f"{year}.tsv"), "a") as fout:
+					fout.write (line)
 
 			if ((line_no+1) % 100000) == 0:
-				logging.info (f"Processed {line_no} lines from {args.embeddings_file}")
-	
+				logging.info (f"Processed {line_no} lines from {args.embeddings_file}")	
 
 if __name__ == "__main__":
 	main (readArgs ())
