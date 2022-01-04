@@ -93,7 +93,7 @@ def main (args):
 		counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
 		for year in range (args.from_year, args.till_year):
 			before_count, after_count = split_counts (year, counts)
-			print (year, before_count, after_count, sum(list(counts.values())))	
+			print (word, year, before_count, after_count, sum(list(counts.values())))	
 
 if __name__ == "__main__":
 	main (readArgs ())
