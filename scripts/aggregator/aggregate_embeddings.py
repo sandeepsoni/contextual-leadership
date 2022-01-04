@@ -44,7 +44,7 @@ def main (args):
 		for line in fin:
 			words.add (line.strip())
 
-	for i, word in enumerate (words):
+	for i, word in enumerate (tqdm(words)):
 		word_dir = os.path.join (args.word_embeddings_dir, word)
 		overall_counts = dict ()
 		overall_count = 0
@@ -70,10 +70,10 @@ def main (args):
 				fout.write (f"{count}\n")
 
 			with open (os.path.join (word_dir, f"{year}.mean_embedding"), "w") as fout:
-				fout.write (f"{list (map(str, mean_embedding.tolist()))}\n")
+				fout.write (f"{' '.join(list (map(str, mean_embedding.tolist())))}\n")
 				
 			with open (os.path.join (word_dir, f"{year}.var_embedding"), "w") as fout:
-				fout.write (f"{list (map(str, var_embedding.tolist()))}\n")
+				fout.write (f"{' '.join(list (map(str, var_embedding.tolist())))}\n")
 
 			logging.info (f"Statistics for {word} in {year} written")
 
@@ -89,10 +89,10 @@ def main (args):
 				fout.write (f"{year}\t{overall_counts[year]}\n")
 
 		with open (os.path.join (word_dir, f"{word}.overall_mean_embedding"), "w") as fout:
-			fout.write (f"{list (map(str, overall_mean_embedding.tolist()))}\n")
+			fout.write (f"{' '.join(list (map(str, overall_mean_embedding.tolist())))}\n")
 				
 		with open (os.path.join (word_dir, f"{word}.overall_var_embedding"), "w") as fout:
-			fout.write (f"{list (map(str, overall_var_embedding.tolist()))}\n")
+			fout.write (f"{' '.join(list (map(str, overall_var_embedding.tolist())))}\n")
 
 		logging.info (f"Overall statistics for {word} written")
 
