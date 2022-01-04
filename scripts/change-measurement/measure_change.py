@@ -91,7 +91,7 @@ def main (args):
 	for word in words:
 		# Read the counts file as dictionary.
 		counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
-		for year in range (args.from_year, args.last_year):
+		for year in range (args.from_year, args.till_year):
 			before_count, after_count = split_counts (year, counts)
 			print (year, before_count, after_count, sum(list(counts.values())))	
 
