@@ -76,7 +76,7 @@ def main (args):
 	for word in words:
 		# Read the counts file as dictionary.
 		counts = dict ()
-		with open (os.path.join (args.word_embeddings_dir, f"{word}.overall_counts")) as fin:
+		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts")) as fin:
 			for line in fin:
 				parts = line.strip().split ("\t")
 				year, count = int (parts[0]), int (parts[1])
