@@ -66,6 +66,15 @@ def main (args):
 		for i, score in enumerate (scores):
 			fout.write(f'{split_points[i]},{score}\n')
 
+def read_counts_from_file (filename):
+	counts = dict ()
+	with open (filename) as fin:
+		for line in fin:
+			parts = line.strip().split ("\t")
+			year, count = int (parts[0]), int (parts[1])
+			counts[year] = count
+
+	return counts
 
 def main (args):
 	words = set ()
@@ -75,14 +84,8 @@ def main (args):
 
 	for word in words:
 		# Read the counts file as dictionary.
-		counts = dict ()
-		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts")) as fin:
-			for line in fin:
-				parts = line.strip().split ("\t")
-				year, count = int (parts[0]), int (parts[1])
-				counts[year] = count
-
-			logging.info (f"{word}: {sum(list (counts.values()))}")
+		counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
+		logging.info (f"{word}: {sum(list (counts.values()))}")
 					
 
 if __name__ == "__main__":
