@@ -97,10 +97,13 @@ def main (args):
 			before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
 			var_embedding = read_embedding_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_var_embedding"))
 			score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
-			print (word, split_year, before_count, after_count, score )
 			scores[split_year] = score
 
 		word_scores[word] = scores
+
+	for word in word_scores:
+		max_score = max ([(y,score) for y,score in word_scores.items()], key=lambda x:x[1])
+		print (word, max_score[0], max_score[1])
 
 if __name__ == "__main__":
 	main (readArgs ())
