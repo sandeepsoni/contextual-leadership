@@ -60,7 +60,16 @@ def split_embeddings (sum_embeddings, year, before_count, after_count):
 	after_embedding = np.stack ([sum_embeddings[year] for y in years if y > year])
 	before_embedding = before_embedding.sum (axis=0)
 	after_embedding = after_embedding.sum (axis=0)
-	return before_embedding/before_count, after_embedding/after_count
+	if before_count > 0 and after_count > 0:
+		before_embedding = before_embedding/before_count
+		after_embedding = after_embedding/after_count
+	elif before_count > 0:
+		before_embedding = before_embedding/before_count
+	elif after_count > 0:
+		after_embedding = after_embedding/after_count
+
+	return before_embedding, after_embedding
+	
 
 def rescale_embeddings (embeddings, counts):
 	return {y: counts[y] * embeddings[y] for y in embeddings}
