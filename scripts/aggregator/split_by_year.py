@@ -40,7 +40,7 @@ def main (args):
 					fout.write (line)
 
 			if ((line_no+1) % 100000) == 0:
-				logging.info (f"Processed {line_no} lines from {args.embeddings_file}")	
+				logging.info (f"Processed {line_no+1} lines from {args.embeddings_file}")	
 
 if __name__ == "__main__":
 	main (readArgs ())
