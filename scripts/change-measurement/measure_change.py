@@ -86,7 +86,7 @@ def main (args):
 		for split_year in range (args.from_year, args.till_year):
 			before_count, after_count = split_counts (split_year, counts)
 			before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
-			var_embedding = read_var_embedding (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_var_embedding"))
+			var_embedding = read_embedding_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_var_embedding"))
 			score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
 			print (word, split_year, before_count, after_count, score )
 			scores[year] = score
