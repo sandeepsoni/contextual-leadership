@@ -7,7 +7,7 @@
 # Partition: choose the correct machine, and below you can specify the number of nodes and tasks. 
 # This is a magical mystery resolved by reading savio documentation or consulting with their help desk, e.g. https://docs-research-it.berkeley.edu/services/high-performance-computing/user-guide/hardware-config/
 
-#SBATCH --partition=savio3_gpu 
+#SBATCH --partition=savio2_gpu 
 
 
 # All the other options
@@ -20,11 +20,9 @@
 
 #SBATCH --ntasks=1
 
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=2
 
-#SBATCH --gres=gpu:V100:1
-
-#SBATCH --qos=v100_gpu3_normal
+#SBATCH --gres=gpu:1
 
 #SBATCH --mail-user=sandeepsoni@berkeley.edu
 
@@ -44,7 +42,7 @@ cd $PROJECTS_DIR/scripts/embeddings-learning/
 module load cuda/10.2
 hostname
 which python
-python forward-pass.py --text-file $SCRATCH_DIR/data/raw/sample.jsonl --model-checkpoint $SCRATCH_DIR/checkpoints/contextual-word-embeddings/checkpoint-9000 --embeddings-file $SCRATCH_DIR/data/contextual-embeddings/sample.tsv
+python forward-pass.py --text-file $SCRATCH_DIR/data/raw/s2orc_acl_chunks$SUFFIX.jsonl --model-checkpoint $SCRATCH_DIR/checkpoints/bert-embeddings/checkpoint-388000/ --embeddings-file $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_chunks$SUFFIX.tsv
 
 conda deactivate
 #source deactivate

@@ -41,7 +41,7 @@ module load cuda/10.2
 hostname
 which python
 
-python split_by_year.py --embeddings-file $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_embeddings.tsv --words-file $SCRATCH_DIR/data/pre-measurement-filters/by_overall_filters.keep --embeddings-word-dir $SCRATCH_DIR/data/aggregator
+python split_by_year.py --embeddings-file $SCRATCH_DIR/data/contextual-embeddings/s2orc_acl_embeddings.tsv --words-file $SCRATCH_DIR/data/pre-measurement-filters/by_overall_filters$SUFFIX.keepparts --embeddings-word-dir $SCRATCH_DIR/data/aggregator
 
 conda deactivate
 #source deactivate

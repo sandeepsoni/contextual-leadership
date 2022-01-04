@@ -1,0 +1,4 @@
+Before starting the forward-pass.sh batch job, make sure the data file is split.
+
+For example:
+split --additional-suffix=.jsonl s2orc_acl.p5.jsonl --numeric-suffixes=1 -l 4000 s2orc_acl_chunks

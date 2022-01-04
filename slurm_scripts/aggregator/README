@@ -1,0 +1,3 @@
+Before starting the execution of split_by_year.py, split the word candidates file as follows in the relevant directory:
+
+split --additional-suffix=.keepparts by_overall_filters.keep --numeric-suffixes=1 -l 3000 by_overall_filters
