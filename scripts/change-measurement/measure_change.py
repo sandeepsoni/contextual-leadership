@@ -99,11 +99,9 @@ def main (args):
 			score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
 			scores[split_year] = score
 
-		word_scores[word] = scores
-
-	for word in word_scores:
-		max_score = max ([(y,score) for y,score in word_scores.items()], key=lambda x:x[1])
+		max_score = max ([(y,score) for y,score in scores.items()], key=lambda x:x[1])
 		print (word, max_score[0], max_score[1])
+		word_scores[word] = scores
 
 if __name__ == "__main__":
 	main (readArgs ())
