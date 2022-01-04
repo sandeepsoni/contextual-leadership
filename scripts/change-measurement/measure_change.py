@@ -116,7 +116,7 @@ def main (args):
 		for split_year in range (args.from_year, args.till_year):
 			before_count, after_count = split_counts (split_year, counts)
 			before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
-			print (word, year, before_count, after_count, " ".join(list (map(str, before_embedding.tolist())))," ".join(list (map(str, after_embedding.tolist()))))
+			print (word, split_year, before_count, after_count, " ".join(list (map(str, before_embedding.tolist())))," ".join(list (map(str, after_embedding.tolist()))))
 
 if __name__ == "__main__":
 	main (readArgs ())
