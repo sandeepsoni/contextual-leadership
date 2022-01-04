@@ -20,51 +20,8 @@ def readArgs ():
 	args = parser.parse_args ()
 	return args
 
-def readEmbeddingsFromFile (filename, sep='\t'):
-	years = list ()
-	embeddings = list ()
-	with open (filename) as fin:
-		for line in fin:
-			parts = line.split (sep)
-			year, embedding = parts[1], parts[-1].split ()
-			year = int (year)
-			embedding = np.array (embedding).astype (float)
-			years.append (year)
-			embeddings.append (embedding)
-
-	years = np.array (years)
-	embeddings = np.array (embeddings)
-
-	indices = np.argsort (years)
-	years = years[indices]
-	embeddings = embeddings[indices, :]
-	return years, embeddings
-
 def standardize (X):
 	return (X - np.mean(X, axis=0)) / np.std(X, axis=0)
-
-def boundary_points (array):
-	points = dict ()
-	for i, elem in enumerate (array):
-		points[elem] = i+1
-	return points
-
-def compute_score (X, t):
-	n = X.shape[0]
-	numerator = (np.sqrt (t) * X[:t].mean(axis=0)) - (np.sqrt (n-t) * X[t:].mean(axis=0))
-	denominator = X.var(axis=0)
-	return (numerator / denominator).dot(numerator)
-
-def main (args):
-	years, embeddings = readEmbeddingsFromFile (args.embeddings_file)
-	embeddings = standardize (embeddings)
-	split_indices = boundary_points (years)
-	split_points = sorted (list(split_indices.keys()))[:-1]
-	scores = [compute_score (embeddings, split_indices[split]) for split in split_points]
-
-	with open (args.output_file, "w") as fout:
-		for i, score in enumerate (scores):
-			fout.write(f'{split_points[i]},{score}\n')
 
 def read_counts_from_file (filename):
 	counts = dict ()
@@ -85,6 +42,12 @@ def read_embeddings_from_files (dirname, from_year, till_year):
 
 	return embeddings
 
+def read_embedding_from_file (filename):
+	with open (filename) as fin:
+		embedding = np.array (fin.read().strip().split()).astype (float)
+
+	return embedding
+
 def split_counts (year, counts):
 	years = sorted (list (counts.keys()))
 	before_count = sum([counts[y] for y in years if y <= year])
@@ -102,21 +65,33 @@ def split_embeddings (sum_embeddings, year, before_count, after_count):
 def rescale_embeddings (embeddings, counts):
 	return {y: counts[y] * embeddings[y] for y in embeddings}
 
+def compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding):
+	numerator = (np.sqrt (before_count) * before_embedding) - (np.sqrt (after_count) * after_embedding)
+	denominator = var_embedding
+	return (numerator/denominator).dot (numerator)
+
 def main (args):
 	words = set ()
 	with open (args.words_file) as fin:
 		for line in fin:
 			words.add (line.strip())
 
+	word_scores = dict ()
 	for word in words:
 		# Read the counts file as dictionary.
 		counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
 		embeddings = read_embeddings_from_files (os.path.join (args.word_embeddings_dir, word), args.from_year, args.till_year)
 		sum_embeddings = rescale_embeddings (embeddings, counts)	
+		scores = dict ()
 		for split_year in range (args.from_year, args.till_year):
 			before_count, after_count = split_counts (split_year, counts)
 			before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
-			print (word, split_year, before_count, after_count, " ".join(list (map(str, before_embedding.tolist())))," ".join(list (map(str, after_embedding.tolist()))))
+			var_embedding = read_var_embedding (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_var_embedding"))
+			score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
+			print (word, split_year, before_count, after_count, score )
+			scores[year] = score
+
+		word_scores[word] = scores
 
 if __name__ == "__main__":
 	main (readArgs ())
