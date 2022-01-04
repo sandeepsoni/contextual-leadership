@@ -76,6 +76,12 @@ def read_counts_from_file (filename):
 
 	return counts
 
+def split_counts (year, counts):
+	years = sorted (list (counts.keys()))
+	before_count = sum([counts[y] for y in years if y <= year])
+	after_count = sum([counts[y] for y in years if y > year])
+	return before_count, after_count	
+
 def main (args):
 	words = set ()
 	with open (args.words_file) as fin:
@@ -85,8 +91,9 @@ def main (args):
 	for word in words:
 		# Read the counts file as dictionary.
 		counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
-		logging.info (f"{word}: {sum(list (counts.values()))}")
-					
+		for year in range (args.from_year, args.last_year):
+			before_count, after_count = split_counts (year, counts)
+			print (year, before_count, after_count, sum(list(counts.values())))	
 
 if __name__ == "__main__":
 	main (readArgs ())
