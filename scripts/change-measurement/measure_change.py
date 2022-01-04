@@ -76,7 +76,7 @@ def read_counts_from_file (filename):
 
 	return counts
 
-def read_embeddings_from_files (dir_name, from_year, till_year):
+def read_embeddings_from_files (dirname, from_year, till_year):
 	embeddings = dict ()
 	for year in range (from_year, till_year+1):
 		filename = os.path.join (dirname, f"{year}.mean_embedding")
