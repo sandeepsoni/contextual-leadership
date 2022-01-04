@@ -76,11 +76,31 @@ def read_counts_from_file (filename):
 
 	return counts
 
+def read_embeddings_from_files (dir_name, from_year, till_year):
+	embeddings = dict ()
+	for year in range (from_year, till_year+1):
+		filename = os.path.join (dirname, f"{year}.mean_embedding")
+		with open (filename) as fin:
+			embeddings[year] = np.array (fin.read().strip().split()).astype (float)
+
+	return embeddings
+
 def split_counts (year, counts):
 	years = sorted (list (counts.keys()))
 	before_count = sum([counts[y] for y in years if y <= year])
 	after_count = sum([counts[y] for y in years if y > year])
 	return before_count, after_count	
+
+def split_embeddings (sum_embeddings, year, before_count, after_count):
+	years = sorted (list (sum_embeddings.keys()))
+	before_embedding = np.stack ([sum_embeddings[year] for y in years if y <= year])
+	after_embedding = np.stack ([sum_embeddings[year] for y in years if y > year])
+	before_embedding = before_embedding.sum (axis=0)
+	after_embedding = after_embedding.sum (axis=0)
+	return before_embedding/before_count, after_embedding/after_count
+
+def rescale_embeddings (embeddings, counts):
+	return {y: counts[y] * embeddings[y] for y in embeddings}
 
 def main (args):
 	words = set ()
@@ -91,9 +111,12 @@ def main (args):
 	for word in words:
 		# Read the counts file as dictionary.
 		counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
-		for year in range (args.from_year, args.till_year):
-			before_count, after_count = split_counts (year, counts)
-			print (word, year, before_count, after_count, sum(list(counts.values())))	
+		embeddings = read_embeddings_from_files (os.path.join (args.word_embeddings_dir, word), args.from_year, args.till_year)
+		sum_embeddings = rescale_embeddings (embeddings, counts)	
+		for split_year in range (args.from_year, args.till_year):
+			before_count, after_count = split_counts (split_year, counts)
+			before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
+			print (word, year, before_count, after_count, " ".join(list (map(str, before_embedding.tolist())))," ".join(list (map(str, after_embedding.tolist()))))
 
 if __name__ == "__main__":
 	main (readArgs ())
