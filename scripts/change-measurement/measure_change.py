@@ -85,8 +85,8 @@ def main (args):
 		for line in fin:
 			words.add (line.strip())
 
-	with open (os.path.join (args.word_embeddings_dir, word, f"{word}.computed_scores"), "w") as fout:
-		for word in words:
+	for word in words:
+		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.computed_scores"), "w") as fout:
 			# Read the counts file as dictionary.
 			counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
 			embeddings = read_embeddings_from_files (os.path.join (args.word_embeddings_dir, word), args.from_year, args.till_year)
