@@ -101,8 +101,10 @@ def main (args):
 				score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
 				scores[split_year] = score
 
-			max_score = max ([(y,score) for y,score in scores.items()], key=lambda x:x[1])
-			fout.write (f"{word}\t{max_score[0]}\t{cumulative_counts[max_score[0]][0]}\t{cumulative_counts[max_score[0]][1]}\t{max_score[1]}\n")
+			#max_score = max ([(y,score) for y,score in scores.items()], key=lambda x:x[1])
+			for y,score in sorted (scores.items(), key=lambda x:x[0]):
+				fout.write (f"{word}\t{score}\t{cumulative_counts[y][0]}\t{cumulative_counts[y][1]}\n")
+			#fout.write (f"{word}\t{max_score[0]}\t{cumulative_counts[max_score[0]][0]}\t{cumulative_counts[max_score[0]][1]}\t{max_score[1]}\n")
 
 if __name__ == "__main__":
 	main (readArgs ())
