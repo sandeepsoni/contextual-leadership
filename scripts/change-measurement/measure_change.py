@@ -85,23 +85,24 @@ def main (args):
 		for line in fin:
 			words.add (line.strip())
 
-	word_scores = dict ()
-	for word in words:
-		# Read the counts file as dictionary.
-		counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
-		embeddings = read_embeddings_from_files (os.path.join (args.word_embeddings_dir, word), args.from_year, args.till_year)
-		sum_embeddings = rescale_embeddings (embeddings, counts)	
-		scores = dict ()
-		for split_year in range (args.from_year, args.till_year):
-			before_count, after_count = split_counts (split_year, counts)
-			before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
-			var_embedding = read_embedding_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_var_embedding"))
-			score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
-			scores[split_year] = score
+	with open (os.path.join (args.word_embeddings_dir, word, f"{word}.computed_scores"), "w") as fout:
+		for word in words:
+			# Read the counts file as dictionary.
+			counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
+			embeddings = read_embeddings_from_files (os.path.join (args.word_embeddings_dir, word), args.from_year, args.till_year)
+			sum_embeddings = rescale_embeddings (embeddings, counts)	
+			scores = dict ()
+			cumulative_counts = dict ()
+			for split_year in range (args.from_year, args.till_year):
+				before_count, after_count = split_counts (split_year, counts)
+				cumulative_counts[split_year] = (before_count, after_count)
+				before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
+				var_embedding = read_embedding_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_var_embedding"))
+				score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
+				scores[split_year] = score
 
-		max_score = max ([(y,score) for y,score in scores.items()], key=lambda x:x[1])
-		print (word, max_score[0], max_score[1])
-		word_scores[word] = scores
+			max_score = max ([(y,score) for y,score in scores.items()], key=lambda x:x[1])
+			fout.write (f"{word}\t{max_score[0]}\t{cumulative_counts[max_score[0]][0]}\t{cumulative_counts[max_score[0]][1]}\t{max_score[1]}\n")
 
 if __name__ == "__main__":
 	main (readArgs ())
