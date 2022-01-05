@@ -23,61 +23,21 @@ def readArgs ():
 def standardize (X):
 	return (X - np.mean(X, axis=0)) / np.std(X, axis=0)
 
-def read_counts_from_file (filename):
-	counts = dict ()
+def compute_score (before_embedding, after_embedding, var, before_count, after_count):
+	numerator = before_embedding - after_embedding
+	denominator = var
+
+	return np.dot ((np.sqrt(before_count) * numerator)/denominator, np.sqrt (after_count) * numerator)
+	#return np.dot ((np.sqrt (before_count) * (before_embedding - after_embedding))/var, np.sqrt (after_count) * (before_embedding - after_embedding))
+
+def read_embeddings_from_file (filename):
+	embeddings = list ()
 	with open (filename) as fin:
 		for line in fin:
 			parts = line.strip().split ("\t")
-			year, count = int (parts[0]), int (parts[1])
-			counts[year] = count
-
-	return counts
-
-def read_embeddings_from_files (dirname, from_year, till_year):
-	embeddings = dict ()
-	for year in range (from_year, till_year+1):
-		filename = os.path.join (dirname, f"{year}.mean_embedding")
-		with open (filename) as fin:
-			embeddings[year] = np.array (fin.read().strip().split()).astype (float)
-
-	return embeddings
-
-def read_embedding_from_file (filename):
-	with open (filename) as fin:
-		embedding = np.array (fin.read().strip().split()).astype (float)
-
-	return embedding
-
-def split_counts (year, counts):
-	years = sorted (list (counts.keys()))
-	before_count = sum([counts[y] for y in years if y <= year])
-	after_count = sum([counts[y] for y in years if y > year])
-	return before_count, after_count	
-
-def split_embeddings (sum_embeddings, year, before_count, after_count):
-	years = sorted (list (sum_embeddings.keys()))
-	before_embedding = np.stack ([sum_embeddings[year] for y in years if y <= year])
-	after_embedding = np.stack ([sum_embeddings[year] for y in years if y > year])
-	before_embedding = before_embedding.sum (axis=0)
-	after_embedding = after_embedding.sum (axis=0)
-	if before_count > 0 and after_count > 0:
-		before_embedding = before_embedding/before_count
-		after_embedding = after_embedding/after_count
-	elif before_count > 0:
-		before_embedding = before_embedding/before_count
-	elif after_count > 0:
-		after_embedding = after_embedding/after_count
-
-	return before_embedding, after_embedding
-	
-
-def rescale_embeddings (embeddings, counts):
-	return {y: counts[y] * embeddings[y] for y in embeddings}
-
-def compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding):
-	numerator = (np.sqrt (before_count) * before_embedding) - (np.sqrt (after_count) * after_embedding)
-	denominator = var_embedding
-	return (numerator/denominator).dot (numerator)
+			embedding = np.array(parts[-1].split()).astype(float)
+			embeddings.append (embedding)
+	return np.stack (embeddings, axis=1)
 
 def main (args):
 	words = set ()
@@ -87,24 +47,28 @@ def main (args):
 
 	for word in words:
 		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.computed_scores"), "w") as fout:
-			# Read the counts file as dictionary.
-			counts = read_counts_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_counts"))
-			embeddings = read_embeddings_from_files (os.path.join (args.word_embeddings_dir, word), args.from_year, args.till_year)
-			sum_embeddings = rescale_embeddings (embeddings, counts)	
-			scores = dict ()
-			cumulative_counts = dict ()
-			for split_year in range (args.from_year, args.till_year):
-				before_count, after_count = split_counts (split_year, counts)
-				cumulative_counts[split_year] = (before_count, after_count)
-				before_embedding, after_embedding = split_embeddings (sum_embeddings, split_year, before_count, after_count)
-				var_embedding = read_embedding_from_file (os.path.join (args.word_embeddings_dir, word, f"{word}.overall_var_embedding"))
-				score = compute_score (before_count, before_embedding, after_count, after_embedding, var_embedding)
-				scores[split_year] = score
+			# Get all the years for which we have embeddings.
+			years = [year for year in range (args.from_year, args.till_year) if os.path.isfile (os.path.join (args.word_embeddings_dir, word, f"{year}.tsv"))]
+			# Read the embeddings.
+			embeddings_list = [read_embeddings_from_file (os.path.join (args.word_embeddings_dir, word, f"{year}.tsv")) for year in years]
 
-			#max_score = max ([(y,score) for y,score in scores.items()], key=lambda x:x[1])
-			for y,score in sorted (scores.items(), key=lambda x:x[0]):
-				fout.write (f"{word}\t{y}\t{score}\t{cumulative_counts[y][0]}\t{cumulative_counts[y][1]}\n")
-			#fout.write (f"{word}\t{max_score[0]}\t{cumulative_counts[max_score[0]][0]}\t{cumulative_counts[max_score[0]][1]}\t{max_score[1]}\n")
+			# Pool the embeddings
+			before_embeddings = [np.concatenate (embeddings_list[0:i], axis=0).mean(axis=0) for i in range (1, len (embeddings_list))]
+			after_embeddings = [np.concatenate (embeddings_list[i:], axis=0).mean(axis=0) for i in range (1, len (embeddings_list))]
+
+			# Variance of the embeddings
+			var = (np.concatenate (embeddings_list, axis=0)).var (axis=0)
+
+			# Calculate the before and after counts
+			before_counts = [np.concatenate (embeddings_list[0:i], axis=0).shape[0] for i in range (1, len (embeddings_list))]
+			after_counts = [np.concatenate (embeddings_list[i:], axis=0).shape[0] for i in range (1, len (embeddings_list))]
+
+			frequency_accounted_scores = [compute_score (before_embeddings[i], after_embeddings[i], var, before_counts[i], after_counts[i]) for i in range (len (before_embeddings))]
+			scores = [compute_score2 (before_embeddings[i], after_embeddings[i], var) for i in range (len (before_embeddings))]
+			i= 0
+			for score, year in zip(scores, years[1:]):
+				fout.write (f"{word}\t{year}\t{frequency_accounted_scores[i]}\t{score}\t{before_counts[i]}\t{after_counts[i]}\n")
+				i+=1
 
 if __name__ == "__main__":
 	main (readArgs ())
