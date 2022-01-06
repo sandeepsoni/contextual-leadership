@@ -45,7 +45,7 @@ def main (args):
 		for line in fin:
 			words.add (line.strip())
 
-	for word in words:
+	for word in tqdm(words):
 		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.computed_scores"), "w") as fout:
 			# Get all the years for which we have embeddings.
 			years = [year for year in range (args.from_year, args.till_year) if os.path.isfile (os.path.join (args.word_embeddings_dir, word, f"{year}.tsv"))]
