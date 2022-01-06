@@ -37,7 +37,7 @@ def read_embeddings_from_file (filename):
 			parts = line.strip().split ("\t")
 			embedding = np.array(parts[-1].split()).astype(float)
 			embeddings.append (embedding)
-	return np.stack (embeddings, axis=1)
+	return np.stack (embeddings, axis=0)
 
 def main (args):
 	words = set ()
