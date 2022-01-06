@@ -30,6 +30,12 @@ def compute_score (before_embedding, after_embedding, var, before_count, after_c
 	return np.dot ((np.sqrt(before_count) * numerator)/denominator, np.sqrt (after_count) * numerator)
 	#return np.dot ((np.sqrt (before_count) * (before_embedding - after_embedding))/var, np.sqrt (after_count) * (before_embedding - after_embedding))
 
+def compute_score2 (before_embedding, after_embedding, var, before_count, after_count):
+	numerator = before_embedding - after_embedding
+	denominator = var
+
+	return np.dot (numerator/denominator, numerator)
+
 def read_embeddings_from_file (filename):
 	embeddings = list ()
 	with open (filename) as fin:
@@ -64,7 +70,7 @@ def main (args):
 			after_counts = [np.concatenate (embeddings_list[i:], axis=0).shape[0] for i in range (1, len (embeddings_list))]
 
 			frequency_accounted_scores = [compute_score (before_embeddings[i], after_embeddings[i], var, before_counts[i], after_counts[i]) for i in range (len (before_embeddings))]
-			scores = [compute_score (before_embeddings[i], after_embeddings[i], var, before_counts[i], after_counts[i]) for i in range (len (before_embeddings))]
+			scores = [compute_score2 (before_embeddings[i], after_embeddings[i], var, before_counts[i], after_counts[i]) for i in range (len (before_embeddings))]
 			i= 0
 			for score, year in zip(scores, years[1:]):
 				fout.write (f"{word}\t{year}\t{frequency_accounted_scores[i]}\t{score}\t{before_counts[i]}\t{after_counts[i]}\n")
