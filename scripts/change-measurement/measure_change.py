@@ -52,6 +52,8 @@ def main (args):
 			# Read the embeddings.
 			embeddings_list = [read_embeddings_from_file (os.path.join (args.word_embeddings_dir, word, f"{year}.tsv")) for year in years]
 
+			print (embeddings_list[0].shape)
+
 			# Pool the embeddings
 			before_embeddings = [np.concatenate (embeddings_list[0:i], axis=0).mean(axis=0) for i in range (1, len (embeddings_list))]
 			after_embeddings = [np.concatenate (embeddings_list[i:], axis=0).mean(axis=0) for i in range (1, len (embeddings_list))]
