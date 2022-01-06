@@ -66,7 +66,7 @@ def main (args):
 			after_counts = [np.concatenate (embeddings_list[i:], axis=0).shape[0] for i in range (1, len (embeddings_list))]
 
 			frequency_accounted_scores = [compute_score (before_embeddings[i], after_embeddings[i], var, before_counts[i], after_counts[i]) for i in range (len (before_embeddings))]
-			scores = [compute_score (before_embeddings[i], after_embeddings[i], var) for i in range (len (before_embeddings))]
+			scores = [compute_score (before_embeddings[i], after_embeddings[i], var, before_counts[i], after_counts[i]) for i in range (len (before_embeddings))]
 			i= 0
 			for score, year in zip(scores, years[1:]):
 				fout.write (f"{word}\t{year}\t{frequency_accounted_scores[i]}\t{score}\t{before_counts[i]}\t{after_counts[i]}\n")
