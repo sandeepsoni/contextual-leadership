@@ -1,4 +1,6 @@
 import argparse
+import os
+import tqdm
 
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Get the peak score for each word")
@@ -13,7 +15,7 @@ def main (args):
 		for line in fin:
 			words.add (line.strip())
 
-	for word in words:
+	for word in tqdm(words):
 		filename = os.path.join (args.word_embeddings_dir, word, f"{word}.computed_scores")
 		with open (filename) as fin:
 			parts = [line.strip().split("\t") for line in fin]
