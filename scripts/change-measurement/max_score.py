@@ -1,6 +1,6 @@
 import argparse
 import os
-import tqdm
+from tqdm import tqdm
 
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Get the peak score for each word")
