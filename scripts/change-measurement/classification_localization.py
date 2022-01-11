@@ -34,11 +34,12 @@ def balanced_random_sample (X, y, samples=100):
 	Xs = X[ind]
 	return ys, Xs
 
-def make_per_instance_frame (probs, true_labels, predicted_labels, paper_ids, positions):
+def make_per_instance_frame (probs, true_labels, predicted_labels, years, paper_ids, positions):
 	d = {'probFalse': probs[:,0], 
 		 'probTrue': probs[:,1],
 		 'true_labels': true_labels,
 		 'predicted_labels': predicted_labels,
+		 'years': years,
 		 'paper_id': paper_ids,
 		 'token_position': positions}
 	return pd.DataFrame (d)
@@ -101,14 +102,14 @@ def main (args):
 				paper_ids.extend (ids)
 				positions.extend (pos)
 
-		y = np.array (year_labels)
+		years = np.array (year_labels)
 		X = np.array (embeddings)
 		X = standardize (X)
-		y = (y >= groundtruth[word])
+		y = (years >= groundtruth[word])
 		clf = LogisticRegressionCV(Cs=1, fit_intercept=False, cv=4, random_state=1).fit(X, y)
 		probs = clf.predict_proba(X)
 		predictions = clf.predict (X)
-		frame = make_per_instance_frame(probs, y, predictions, paper_ids, positions)
+		frame = make_per_instance_frame(probs, y, predictions, years, paper_ids, positions)
 		frame.to_csv (os.path.join (args.word_embeddings_dir, word,f"{word}.classification.tsv"), sep='\t', header=True, index=False)
 		meta_json = make_meta_JSON (word, groundtruth[word], y, predictions)
 		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.classification_meta.json"), "w") as fout:
