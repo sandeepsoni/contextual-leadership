@@ -1,5 +1,5 @@
 import argparse
-import ujson
+import json
 import glob
 import os
 import sklearn
@@ -104,7 +104,7 @@ def main (args):
 	frame.to_csv (os.path.join (args.embeddings_dir, args.words_dir, args.word, 'classification.csv'), sep=',', header=True, index=False)
 	meta_json = makeMetaJSON (args.word, years[i], y, predictions)
 	with open (os.path.join (args.embeddings_dir, args.words_dir, args.word, 'classification_meta.json'), 'w') as fout:
-		fout.write (f'{ujson.dumps (meta_json)}\n')
+		fout.write (f'{json.dumps (meta_json)}\n')
 
 if __name__ == "__main__":
 	main (readArgs ())
