@@ -16,20 +16,10 @@ def readArgs ():
 	parser.add_argument ("--words-file", type=str, required=True, help="File contains list of words")
 	parser.add_argument ("--word-embeddings-dir", type=str, required=True, help="Directory contains embeddings")
 	parser.add_argument ("--nsamples", type=int, required=False, default=200, help="The number of samples used for training")
+	parser.add_argument ("--from-year", type=int, required=False, default=1990, help="The starting year")
+	parser.add_argument ("--till-year", type=int, required=False, default=2019, help="The end year")
 	args = parser.parse_args ()
 	return args
-
-def readEmbeddings (filename, sep='\t'):
-	labels = list ()
-	embeddings = list ()
-	with open (filename) as fin:
-		for line in fin:
-			parts = line.strip().split (sep)
-			label, embeds = int (parts[1]), list(map(float, parts[-1].split ()))
-			labels.append (label)
-			embeddings.append (embeds)
-            
-	return np.array (labels), np.array (embeddings)
 
 def standardize (X):
 	return (X - np.mean(X, axis=0)) / np.std(X, axis=0)
@@ -61,6 +51,16 @@ def makeMetaJSON (word, year, true_labels, predicted_labels):
 	js['classification_report'] = classification_report (true_labels, predicted_labels)
 	return js
 
+def readEmbeddings (filename, sep='\t'):
+	embeddings = list ()
+	with open (filename) as fin:
+		for line in fin:
+			parts = line.strip().split (sep)
+			embeds = list(map(float, parts[-1].split ()))
+			embeddings.append (embeds)
+
+	return embeddings            
+
 def read_groundtruth_file (filename, sep="\t"):
 	groundtruth = dict ()
 	with open (filename) as fin:
@@ -80,8 +80,21 @@ def main (args):
 		for line in fin:
 			words.add (line.strip())
 
-	print (len (words))
-	return
+	for word in words:
+		embeddings = list ()
+		year_labels = list ()
+		for year in range (args.from_year, args.till_year+1):
+			filename = os.path.join (args.word_embeddings_dir, word, f"{year}.tsv")
+			embeds = read_embeddings (filename)
+			year_labels.extend ([year] * len (embeds))
+			embeddings.extend (embeds)
+
+		y = np.array (year_labels)
+		X = np.array (embeddings)
+		print (word, y.shape, X.shape)
+	
+		return
+			
 
 	SEMICOL=';'
 	df = pd.read_csv (os.path.join (args.embeddings_dir, args.innovs_file), sep=SEMICOL)
