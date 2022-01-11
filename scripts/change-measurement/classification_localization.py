@@ -12,10 +12,10 @@ from sklearn.metrics import confusion_matrix, classification_report, accuracy_sc
 
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Classify each instance of a word")
-	parser.add_argument ("--embeddings-dir", type=str, required=True, help="Directory contains embeddings")
-	parser.add_argument ("--innovs-file", type=str, required=True, help="Innovations file")
-	parser.add_argument ("--words-dir", type=str, required=True, help="Words directory")
-	parser.add_argument ("--word", type=str, required=True, help="Word of interest")
+	parser.add_argument ("--groundtruth-file", type=str, required=True, help="File contains the groundtruth i.e. transition year for each change")
+	parser.add_argument ("--words-file", type=str, required=True, help="File contains list of words")
+	parser.add_argument ("--word-embeddings-dir", type=str, required=True, help="Directory contains embeddings")
+	parser.add_argument ("--nsamples", type=int, required=False, default=200, help="The number of samples used for training")
 	args = parser.parse_args ()
 	return args
 
@@ -61,7 +61,20 @@ def makeMetaJSON (word, year, true_labels, predicted_labels):
 	js['classification_report'] = classification_report (true_labels, predicted_labels)
 	return js
 
+def read_groundtruth_file (filename, sep="\t"):
+	groundtruth = dict ()
+	with open (filename) as fin:
+		for line in fin:
+			parts = line.strip().split (sep)
+			groundtruth[parts[0]] = int (parts[1])
+
+	return groundtruth
+
 def main (args):
+	# Read the groundtruth from file
+	groundtruth = read_groundtruth_file (args.groundtruth_file)
+	print (len (groundtruth))
+	return
 	SEMICOL=';'
 	df = pd.read_csv (os.path.join (args.embeddings_dir, args.innovs_file), sep=SEMICOL)
 	words = df.word.values.tolist()
