@@ -34,11 +34,13 @@ def balanced_random_sample (X, y, samples=100):
 	Xs = X[ind]
 	return ys, Xs
 
-def makePerInstanceFrame (probs, true_labels, predicted_labels):
+def make_per_instance_frame (probs, true_labels, predicted_labels, paper_ids, positions):
 	d = {'probFalse': probs[:,0], 
 		 'probTrue': probs[:,1],
 		 'true_labels': true_labels,
-		 'predicted_labels': predicted_labels}
+		 'predicted_labels': predicted_labels,
+		 'paper_id': paper_ids,
+		 'token_position': positions}
 	return pd.DataFrame (d)
 
 def make_meta_JSON (word, year, true_labels, predicted_labels):
@@ -52,15 +54,19 @@ def make_meta_JSON (word, year, true_labels, predicted_labels):
 	js['classification_report'] = classification_report (true_labels, predicted_labels)
 	return js
 
-def read_embeddings (filename, sep='\t'):
+def read_stats_from_file (filename, sep='\t'):
 	embeddings = list ()
+	paper_ids = list ()
+	positions = list ()
 	with open (filename) as fin:
 		for line in fin:
 			parts = line.strip().split (sep)
+			paper_ids.append (parts[0])
+			positions.append (parts[2])
 			embeds = list(map(float, parts[-1].split ()))
 			embeddings.append (embeds)
 
-	return embeddings            
+	return paper_ids, positions, embeddings
 
 def read_groundtruth_file (filename, sep="\t"):
 	groundtruth = dict ()
@@ -84,12 +90,16 @@ def main (args):
 	for word in words[args.from_index:args.till_index]:
 		embeddings = list ()
 		year_labels = list ()
+		paper_ids = list ()
+		positions = list ()
 		for year in range (args.from_year, args.till_year+1):
 			filename = os.path.join (args.word_embeddings_dir, word, f"{year}.tsv")
 			if os.path.isfile (filename):
-				embeds = read_embeddings (filename)
+				ids, pos, embeds = read_stats_from_file (filename)
 				year_labels.extend ([year] * len (embeds))
 				embeddings.extend (embeds)
+				paper_ids.extend (ids)
+				positions.extend (pos)
 
 		y = np.array (year_labels)
 		X = np.array (embeddings)
@@ -98,6 +108,8 @@ def main (args):
 		clf = LogisticRegressionCV(Cs=1, fit_intercept=False, cv=4, random_state=1).fit(X, y)
 		probs = clf.predict_proba(X)
 		predictions = clf.predict (X)
+		frame = make_per_instance_frame(probs, y, predictions, paper_ids, positions)
+		frame.to_csv (os.path.join (args.word_embeddings_dir, word,f"{word}.classification.tsv"), sep='\t', header=True, index=False)
 		meta_json = make_meta_JSON (word, groundtruth[word], y, predictions)
 		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.classification_meta.json"), "w") as fout:
 			fout.write (f'{json.dumps (meta_json)}\n')
