@@ -73,8 +73,16 @@ def read_groundtruth_file (filename, sep="\t"):
 def main (args):
 	# Read the groundtruth from file
 	groundtruth = read_groundtruth_file (args.groundtruth_file)
-	print (len (groundtruth))
+
+	# Read words one at a time
+	words = set ()
+	with open (args.words_file) as fin:
+		for line in fin:
+			words.add (line.strip())
+
+	print (len (words))
 	return
+
 	SEMICOL=';'
 	df = pd.read_csv (os.path.join (args.embeddings_dir, args.innovs_file), sep=SEMICOL)
 	words = df.word.values.tolist()
