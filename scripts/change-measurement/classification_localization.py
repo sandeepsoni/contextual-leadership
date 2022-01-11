@@ -85,9 +85,10 @@ def main (args):
 		year_labels = list ()
 		for year in range (args.from_year, args.till_year+1):
 			filename = os.path.join (args.word_embeddings_dir, word, f"{year}.tsv")
-			embeds = read_embeddings (filename)
-			year_labels.extend ([year] * len (embeds))
-			embeddings.extend (embeds)
+			if os.path.isfile (filename):
+				embeds = read_embeddings (filename)
+				year_labels.extend ([year] * len (embeds))
+				embeddings.extend (embeds)
 
 		y = np.array (year_labels)
 		X = np.array (embeddings)
