@@ -51,7 +51,7 @@ def makeMetaJSON (word, year, true_labels, predicted_labels):
 	js['classification_report'] = classification_report (true_labels, predicted_labels)
 	return js
 
-def readEmbeddings (filename, sep='\t'):
+def read_embeddings (filename, sep='\t'):
 	embeddings = list ()
 	with open (filename) as fin:
 		for line in fin:
