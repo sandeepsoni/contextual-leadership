@@ -15,9 +15,10 @@ def readArgs ():
 	parser.add_argument ("--groundtruth-file", type=str, required=True, help="File contains the groundtruth i.e. transition year for each change")
 	parser.add_argument ("--words-file", type=str, required=True, help="File contains list of words")
 	parser.add_argument ("--word-embeddings-dir", type=str, required=True, help="Directory contains embeddings")
-	parser.add_argument ("--nsamples", type=int, required=False, default=200, help="The number of samples used for training")
 	parser.add_argument ("--from-year", type=int, required=False, default=1990, help="The starting year")
 	parser.add_argument ("--till-year", type=int, required=False, default=2019, help="The end year")
+	parser.add_argument ("--from-index", type=int, required=True, help="The starting index in the list of words")
+	parser.add_argument ("--till-index", type=int, required=True, help="The ending index in the list of words")
 	args = parser.parse_args ()
 	return args
 
@@ -80,7 +81,7 @@ def main (args):
 		for line in fin:
 			words.append (line.strip())
 
-	for word in words:
+	for word in words[args.from_index:args.till_index]:
 		embeddings = list ()
 		year_labels = list ()
 		for year in range (args.from_year, args.till_year+1):
@@ -98,9 +99,11 @@ def main (args):
 		probs = clf.predict_proba(X)
 		predictions = clf.predict (X)
 		meta_json = make_meta_JSON (word, groundtruth[word], y, predictions)
-		print (meta_json)
-		return
-			
+		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.classification_meta.json"), "w") as fout:
+			fout.write (f'{json.dumps (meta_json)}\n')
+
+	return
+		
 
 	SEMICOL=';'
 	df = pd.read_csv (os.path.join (args.embeddings_dir, args.innovs_file), sep=SEMICOL)
