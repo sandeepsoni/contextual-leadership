@@ -40,7 +40,7 @@ def makePerInstanceFrame (probs, true_labels, predicted_labels):
 		 'predicted_labels': predicted_labels}
 	return pd.DataFrame (d)
 
-def makeMetaJSON (word, year, true_labels, predicted_labels):
+def make_meta_JSON (word, year, true_labels, predicted_labels):
 	js = {}
 	js['word'] = word
 	js['year'] = year
@@ -75,10 +75,10 @@ def main (args):
 	groundtruth = read_groundtruth_file (args.groundtruth_file)
 
 	# Read words one at a time
-	words = set ()
+	words = list ()
 	with open (args.words_file) as fin:
 		for line in fin:
-			words.add (line.strip())
+			words.append (line.strip())
 
 	for word in words:
 		embeddings = list ()
@@ -92,8 +92,13 @@ def main (args):
 
 		y = np.array (year_labels)
 		X = np.array (embeddings)
-		print (word, y.shape, X.shape)
-	
+		X = standardize (X)
+		y = (y >= groundtruth[word])
+		clf = LogisticRegressionCV(Cs=1, fit_intercept=False, cv=4, random_state=1).fit(X, y)
+		probs = clf.predict_proba(X)
+		predictions = clf.predict (X)
+		meta_json = make_meta_JSON (word, groundtruth[word], y, predictions)
+		print (meta_json)
 		return
 			
 
