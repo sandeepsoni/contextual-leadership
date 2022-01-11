@@ -9,6 +9,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from tqdm import tqdm
 
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Classify each instance of a word")
@@ -88,7 +89,7 @@ def main (args):
 		for line in fin:
 			words.append (line.strip())
 
-	for word in words[args.from_index:args.till_index]:
+	for word in tqdm (words[args.from_index:args.till_index]):
 		embeddings = list ()
 		year_labels = list ()
 		paper_ids = list ()
@@ -115,31 +116,6 @@ def main (args):
 		with open (os.path.join (args.word_embeddings_dir, word, f"{word}.classification_meta.json"), "w") as fout:
 			fout.write (f'{json.dumps (meta_json)}\n')
 
-	return
-		
-
-	SEMICOL=';'
-	df = pd.read_csv (os.path.join (args.embeddings_dir, args.innovs_file), sep=SEMICOL)
-	words = df.word.values.tolist()
-	years = df.year.values.tolist()
-	i = words.index (args.word)
-	
-	embeddings_file = os.path.join (args.embeddings_dir, args.words_dir, args.word, 'embeddings.tsv')
-	if not os.path.exists (embeddings_file):
-		print (f'{embeddings_file} not found')
-		return
-
-	y, X = readEmbeddings (embeddings_file)
-	X = standardize (X)
-	y = (y > years[i])
-	clf = LogisticRegressionCV(Cs=1, fit_intercept=False, cv=4, random_state=1).fit(X, y)
-	probs = clf.predict_proba(X)
-	predictions = clf.predict (X)
-	frame = makePerInstanceFrame(probs, y, predictions)
-	frame.to_csv (os.path.join (args.embeddings_dir, args.words_dir, args.word, 'classification.csv'), sep=',', header=True, index=False)
-	meta_json = makeMetaJSON (args.word, years[i], y, predictions)
-	with open (os.path.join (args.embeddings_dir, args.words_dir, args.word, 'classification_meta.json'), 'w') as fout:
-		fout.write (f'{json.dumps (meta_json)}\n')
 
 if __name__ == "__main__":
 	main (readArgs ())
