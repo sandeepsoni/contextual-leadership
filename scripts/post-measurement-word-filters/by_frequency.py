@@ -2,7 +2,7 @@
 
 The final list of change words is found by filtering out words with the following properties.
 
-- The before and after counts should be at least 10 tokens per million tokens.
+- The before and after counts should be at least 5 tokens per million tokens.
 
 """
 
@@ -24,7 +24,7 @@ def readArgs ():
 	parser = argparse.ArgumentParser (description="Filter down the vocabulary")
 	parser.add_argument ("--computed-scores-file", required=True, type=str, help="File contains a sorted list of words and their computed scores")
 	parser.add_argument ("--word-embeddings-dir", required=True, type=str, help="File contains word embeddings and other statistics")
-	parser.add_argument ("--min-frequency", required=False, type=int, default=10, help="Minimum frequency")
+	parser.add_argument ("--min-frequency", required=False, type=int, default=5, help="Minimum frequency")
 	parser.add_argument ("--from-year", required=False, type=int, default=1990, help="Minimum frequency")
 	parser.add_argument ("--till-year", required=False, type=int, default=2019, help="Minimum frequency")	
 	parser.add_argument ("--keep-file", required=True, type=str, help="Words that pass the filter")
