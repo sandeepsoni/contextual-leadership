@@ -76,7 +76,7 @@ def main (args):
 			after_count = np.sum ([overall_counts[y] for y in range (year, args.till_year + 1)])
 			prop_before = (before_counts[word]/before_count) * MILLION
 			prop_after = (after_counts[word]/after_count) * MILLION
-			if prop_before >= args.min_frequency and prop_later >= args.min_frequency:
+			if prop_before >= args.min_frequency and prop_after >= args.min_frequency:
 				keep_file.write (f"{word}\n")
 			else:
 				discard_file.write (f"{word}\n")
