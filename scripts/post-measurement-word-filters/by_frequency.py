@@ -65,7 +65,8 @@ def main (args):
 				parts = line.strip().split ("\t")
 				y, count = int (parts[0]), int (parts[1])
 				if y not in overall_counts:
-					overall_counts[y] += count	
+					overall_counts[y] = 0
+				overall_counts[y] += count	
 
 	# Now apply the filter
 	with open (args.keep_file, "w") as keep_file, open (args.discard_file, "w") as discard_file:
