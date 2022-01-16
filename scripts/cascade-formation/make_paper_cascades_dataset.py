@@ -82,7 +82,7 @@ def collapse_cascades (cascades, venue_map, keep_venues):
 def main (args):
 	logging.info (f"Read all the data from file {args.input_cascades_file}")
 	# Read all cascade data from file
-	idx, iidx, cascades, innovs = hpio.read_cascades_from_file (args.input_cascades_file)	
+	cascades, innovs = hpio.read_cascades_from_file (args.input_cascades_file)	
 	logging.info (f'Number of cascades originally: {len(cascades)}')
 
 	filtered_cascades = limit_cascades (cascades, num_cascades=args.num_cascades, events_per_cascade=args.events_per_cascade)
@@ -92,14 +92,14 @@ def main (args):
 	logging.info (f'Number of cascades filtered from {len(cascades)} to {len(filtered_cascades)}')
 	logging.info (f'Number of events filtered from {n_events_before} to {n_events_now}')
 
-	return
 
 	idx, iidx = make_channels_map (filtered_cascades)
 	remapped_cascades = remap_cascades (filtered_cascades, idx)
 	formatted_cascades = format_cascades (remapped_cascades)
 
-	with open (data_file, 'wb') as fout: pickle.dump ((idx, iidx, formatted_cascades, innovs), fout)
-	logging.info (f'All relevant data dumped in {data_file}')	
+	with open (args.output_pickle_file, 'wb') as fout: 
+		pickle.dump ((idx, iidx, formatted_cascades, innovs), fout)
+	logging.info (f'All relevant data dumped in {args.output_pickle_file}')
 
 if __name__ == "__main__":
 	main (readArgs ())
