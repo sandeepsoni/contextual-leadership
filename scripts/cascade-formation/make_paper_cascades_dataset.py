@@ -79,7 +79,7 @@ def collapse_cascades (cascades, venue_map, keep_venues):
 
 	return new_cascades
 
-def main ():		
+def main (args):
 	logging.info (f"Read all the data from file {args.input_cascades_file}")
 	# Read all cascade data from file
 	idx, iidx, cascades, innovs = hpio.read_cascades_from_file (args.input_cascades_file)	
@@ -102,4 +102,4 @@ def main ():
 	logging.info (f'All relevant data dumped in {data_file}')	
 
 if __name__ == "__main__":
-	main ()
+	main (readArgs ())
