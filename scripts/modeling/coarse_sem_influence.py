@@ -4,8 +4,8 @@ import pickle
 import numpy as np
 import os
 import sys
-if not os.path.abspath ("../modules") in sys.path:
-	sys.path.append (os.path.abspath ("../modules"))
+if not os.path.abspath ("../../modules") in sys.path:
+	sys.path.append (os.path.abspath ("../../modules"))
 import hpmodels 
 import hpio
 
