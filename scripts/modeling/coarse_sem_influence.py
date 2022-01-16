@@ -7,13 +7,19 @@ import sys
 if not os.path.abspath ("../modules") in sys.path:
 	sys.path.append (os.path.abspath ("../modules"))
 import hpmodels 
+import hpio
 
 import logging
 
+logging.basicConfig(
+	level=logging.INFO, 
+	format= '[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
+	datefmt='%H:%M:%S'
+)
+
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Bandwidth grid search")
-	parser.add_argument ("--data-file", type=str, required=True, help="The name of the file containing all the data")
-	parser.add_argument ("--log-file", type=str, required=True, help="Log the details in this file")
+	parser.add_argument ("--cascades-file", type=str, required=True, help="File contains all cascades with papers as venues")
 	parser.add_argument ("--params-file", type=str, required=True, help="The name of the file containing all the params")
 	parser.add_argument ("--bandwidth", type=float, required=False, default=1.0, help="Bandwidth parameter")
 	parser.add_argument ("--seed", type=int, required=False, default=42, help="random seed")
@@ -24,25 +30,20 @@ def readArgs ():
 	return args
 
 def main (args):
-	logging.basicConfig(
-		filename=args.log_file,
-		level=logging.INFO, 
-		format= '[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
-		datefmt='%H:%M:%S'
-	)
 	# Started program log message
 	logging.info (f'Script execution for optimization started')
 	logging.info (f'Bandwidth: {args.bandwidth}, Train Percentage: {args.train_percent}, L2 coefficient: {args.l2_coeff}, Num cascades: {args.ncascades}')
 
-	# Read the innovations
-	with open (args.data_file, 'rb') as fin:
-		idx, iidx, cascades, innovs = pickle.load (fin)
+	# Read all cascade data from file
+	idx, iidx, cascades, innovs = hpio.read_cascades_from_file (args.cascades_file)
 	
 	logging.info (f"Read all the data from file {args.data_file}")
 
 	total_cascades = len (cascades)
 	cascades = cascades[0:args.ncascades]
 	logging.info (f"Total number of cascades for analysis from {total_cascades} --> {len(cascades)}")
+
+	return
 
 	# Divide the cascades into a random train and dev
 	random.seed (args.seed)
