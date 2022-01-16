@@ -21,6 +21,7 @@ def readArgs ():
 	parser = argparse.ArgumentParser (description="Bandwidth grid search")
 	parser.add_argument ("--cascades-file", type=str, required=True, help="File contains all cascades with papers as venues")
 	parser.add_argument ("--params-file", type=str, required=True, help="The name of the file containing all the params")
+	parser.add_argument ("--nevents-per-cascade", type=str, required=False, default=None, help="Number of events per cascade")
 	parser.add_argument ("--bandwidth", type=float, required=False, default=1.0, help="Bandwidth parameter")
 	parser.add_argument ("--seed", type=int, required=False, default=42, help="random seed")
 	parser.add_argument ("--train-percent", type=float, required=False, default=0.8, help="train percentage in a train-test split")
@@ -35,15 +36,13 @@ def main (args):
 	logging.info (f'Bandwidth: {args.bandwidth}, Train Percentage: {args.train_percent}, L2 coefficient: {args.l2_coeff}, Num cascades: {args.ncascades}')
 
 	# Read all cascade data from file
-	idx, iidx, cascades, innovs = hpio.read_cascades_from_file (args.cascades_file)
+	idx, iidx, cascades, innovs = hpio.read_cascades_from_file (args.cascades_file, args.nevents_per_cascade)
 	
 	logging.info (f"Read all the data from file {args.cascades_file}")
 
 	total_cascades = len (cascades)
 	cascades = cascades[0:args.ncascades]
 	logging.info (f"Total number of cascades for analysis from {total_cascades} --> {len(cascades)}")
-
-	return
 
 	# Divide the cascades into a random train and dev
 	random.seed (args.seed)

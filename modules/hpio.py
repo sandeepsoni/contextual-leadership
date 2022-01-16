@@ -1,9 +1,9 @@
-def read_cascades_from_file (cascades_file):
+def read_cascades_from_file (cascades_file, sep="\t"):
 	idx, iidx = dict (), dict ()
 	cascades = dict ()
 	with open (cascades_file) as fin:
 		for line in fin:
-			parts = line.strip().split ("\t")
+			parts = line.strip().split (sep)
 			innov = parts[0]
 			year = int (parts[1])
 			paper_id = parts[2]
