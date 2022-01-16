@@ -23,7 +23,7 @@ def readArgs ():
 	parser.add_argument ("--output-pickle-file", type=str, required=True, help="File contains all cascades")
 	parser.add_argument ("--num-cascades", type=int, required=False, default=5000, help="Number of cascades to consider")
 	parser.add_argument ("--events-per-cascades", type=int, required=False, default=100, help="Number of events per cascade")
-	args = parser.parser_args ()
+	args = parser.parse_args ()
 	return args	
 
 def limit_cascades (cascades, num_cascades=1000, events_per_cascade=100):
