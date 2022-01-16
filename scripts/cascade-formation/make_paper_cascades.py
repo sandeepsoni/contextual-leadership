@@ -29,10 +29,10 @@ def main (args):
 						if predicted_label and prob_true >= args.confidence_threshold:
 							cascade.append ([word, year, paper_id, token_position])
 		
-		cascade = sorted (cascade, key=lambda x:x[1])
+			cascade = sorted (cascade, key=lambda x:x[1])
 
-		for item in cascade:
-			fout.write (f"{item[0]}\t{item[1]}\t{item[2]}\t{item[3]}\n")
+			for item in cascade:
+				fout.write (f"{item[0]}\t{item[1]}\t{item[2]}\t{item[3]}\n")
 
 if __name__ == "__main__":
 	main (readArgs ())
