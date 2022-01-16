@@ -41,7 +41,7 @@ module load cuda/10.2
 hostname
 which python
 
-python coarse_sem_influence.py --cascades-file $SCRATCH_DIR/data/cascades/paper.cascades.pkl --params-file $SCRATCH_DIR/data/experiments/001/params.pkl --num-cascades $NUM_CASCADES
+python coarse_sem_influence.py --cascades-file $SCRATCH_DIR/data/cascades/paper.cascades.pkl --params-file $SCRATCH_DIR/data/experiments/001/params.$NUM_CASCADES.pkl --ncascades $NUM_CASCADES
 
 conda deactivate
 #source deactivate
