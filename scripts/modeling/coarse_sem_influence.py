@@ -7,7 +7,6 @@ import sys
 if not os.path.abspath ("../../modules") in sys.path:
 	sys.path.append (os.path.abspath ("../../modules"))
 import hpmodels 
-import hpio
 
 import logging
 
@@ -36,9 +35,10 @@ def main (args):
 	logging.info (f'Bandwidth: {args.bandwidth}, Train Percentage: {args.train_percent}, L2 coefficient: {args.l2_coeff}, Num cascades: {args.ncascades}')
 
 	# Read all cascade data from file
-	idx, iidx, cascades, innovs = hpio.read_cascades_from_file (args.cascades_file, args.nevents_per_cascade)
+	with open (args.cascades_file, "rb") as fin:
+		idx, iidx, cascades, innovs = pickle.load (fin)
 	
-	logging.info (f"Read all the data from file {args.cascades_file}")
+	logging.info (f"Finished reading all the data from file {args.cascades_file}")
 
 	total_cascades = len (cascades)
 	cascades = cascades[0:args.ncascades]
