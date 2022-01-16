@@ -4,6 +4,8 @@
 import pickle
 import pandas as pd
 import logging
+import os
+import sys
 import argparse
 if not os.path.abspath ("../../modules") in sys.path:
 	sys.path.append (os.path.abspath ("../../modules"))
