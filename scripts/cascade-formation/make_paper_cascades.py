@@ -22,11 +22,12 @@ def main (args):
 			filename = os.path.join (args.word_embeddings_dir, word, f"{word}.classification.tsv")
 			cascade = list ()
 			with open (filename) as fin:
-				for line in fin:
-					parts = line.strip().split ("\t")
-					prob_true, predicted_label, year, paper_id, token_position  = float (parts[1]), parts[3] == "True", int (parts[4]), parts[5], int (parts[6])
-					if predicted_label and prob_true >= args.confidence_threshold:
-						cascade.append ([word, year, paper_id, token_position])
+				for i, line in enumerate (fin):
+					if i > 0:
+						parts = line.strip().split ("\t")
+						prob_true, predicted_label, year, paper_id, token_position  = float (parts[1]), parts[3] == "True", int (parts[4]), parts[5], int (parts[6])
+						if predicted_label and prob_true >= args.confidence_threshold:
+							cascade.append ([word, year, paper_id, token_position])
 		
 		cascade = sorted (cascade, key=lambda x:x[1])
 
