@@ -22,7 +22,7 @@ def readArgs ():
 	parser.add_argument ("--input-cascades-file", type=str, required=True, help="File contains per word cascade of events")
 	parser.add_argument ("--output-pickle-file", type=str, required=True, help="File contains all cascades")
 	parser.add_argument ("--num-cascades", type=int, required=False, default=5000, help="Number of cascades to consider")
-	parser.add_argument ("--events-per-cascades", type=int, required=False, default=100, help="Number of events per cascade")
+	parser.add_argument ("--events-per-cascade", type=int, required=False, default=100, help="Number of events per cascade")
 	args = parser.parse_args ()
 	return args	
 
