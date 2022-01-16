@@ -37,7 +37,7 @@ def main (args):
 	# Read all cascade data from file
 	idx, iidx, cascades, innovs = hpio.read_cascades_from_file (args.cascades_file)
 	
-	logging.info (f"Read all the data from file {args.data_file}")
+	logging.info (f"Read all the data from file {args.cascades_file}")
 
 	total_cascades = len (cascades)
 	cascades = cascades[0:args.ncascades]
