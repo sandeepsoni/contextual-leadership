@@ -114,7 +114,7 @@ def main (args):
 			paper_id = row["paper_id"]
 			num_innovations = row["num_innovations"]
 
-			history = [word_usage_distribution[word][y] for y in word_usage_distribution[word] if y < year and y in word_usage_distribution]
+			history = [word_usage_distribution[word][y] for y in word_usage_distribution[word] if y < year]
 			history = {paper_id: publication_years[paper_id] for items in history for paper_id, _ in items}
 
 			record = create_record (word, paper_id, year, num_innovations, history)
