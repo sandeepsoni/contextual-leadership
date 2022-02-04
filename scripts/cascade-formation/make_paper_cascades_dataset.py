@@ -76,6 +76,19 @@ def collapse_cascades (cascades, venue_map, keep_venues):
 
 	return new_cascades
 
+def create_record (word, paper_id, year, num_innovations, history):
+	js = dict ()
+	js["word"] = word
+	js["year"] = year
+	js["paper_id"] = paper_id
+	js["num_innovations"] = num_innovations
+	js["previous_papers"] = list ()
+	for key, value in history:
+		js["previous_papers"].append ({"paper_id": key,
+									   "year": value})
+
+	return js
+
 def get_distribution (counts_df):
 	dist = dict ()
 	for row_num, row in counts_df.iterrows():
