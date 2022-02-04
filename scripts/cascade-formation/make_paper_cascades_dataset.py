@@ -83,7 +83,7 @@ def create_record (word, paper_id, year, num_innovations, history):
 	js["paper_id"] = paper_id
 	js["num_innovations"] = num_innovations
 	js["previous_papers"] = list ()
-	for key, value in history:
+	for key, value in history.items():
 		js["previous_papers"].append ({"paper_id": key,
 									   "year": value})
 
