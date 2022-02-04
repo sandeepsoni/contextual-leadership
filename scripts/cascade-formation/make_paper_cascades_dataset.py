@@ -7,9 +7,8 @@ import logging
 import os
 import sys
 import argparse
-if not os.path.abspath ("../../modules") in sys.path:
-	sys.path.append (os.path.abspath ("../../modules"))
-import hpio
+import json
+import pandas as pd
 
 logging.basicConfig(
 	level=logging.INFO, 
@@ -20,9 +19,7 @@ logging.basicConfig(
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Create a fast loadable dataset from file")
 	parser.add_argument ("--input-cascades-file", type=str, required=True, help="File contains per word cascade of events")
-	parser.add_argument ("--output-pickle-file", type=str, required=True, help="File contains all cascades")
-	parser.add_argument ("--num-cascades", type=int, required=False, default=5000, help="Number of cascades to consider")
-	parser.add_argument ("--events-per-cascade", type=int, required=False, default=100, help="Number of events per cascade")
+	parser.add_argument ("--output-counts-file", type=str, required=True, help="File contains counts as JSON per line")
 	args = parser.parse_args ()
 	return args	
 
@@ -79,27 +76,38 @@ def collapse_cascades (cascades, venue_map, keep_venues):
 
 	return new_cascades
 
+def get_distribution (counts_df):
+	dist = dict ()
+	for row_num, row in counts_df.iterrows():
+		if row["word"] not in dist:
+			dist[row["word"]] = dict ()
+		if row["year"] not in dist[row["word"]]:
+			dist[row["word"]][row["year"]] = list ()
+		dist[row["word"]][row["year"]].append ((row["paper_id"], row["num_innovations"]))
+
+	return dist
+
 def main (args):
 	logging.info (f"Read all the data from file {args.input_cascades_file}")
 	# Read all cascade data from file
-	cascades, innovs = hpio.read_cascades_from_file (args.input_cascades_file)	
-	logging.info (f'Number of cascades originally: {len(cascades)}')
+	paper_counts = pd.read_csv(args.input_cascades_file, sep="\t", names=["word", "year", "paper_id", "num_innovations"])	
+	publication_years = {row["paper_id"]: row["year"] for _, row in paper_counts.iterrows()}
+	word_usage_distribution = get_distribution (paper_counts)
 
-	filtered_cascades = limit_cascades (cascades, num_cascades=args.num_cascades, events_per_cascade=args.events_per_cascade)
+	with open (args.output_counts_file, "w") as fout:
+		for row_num, row in paper_counts.iterrows():
+			year = row["year"]
+			word = row["word"] 
+			paper_id = row["paper_id"]
+			num_innovations
 
-	n_events_before = sum([len(cascade) for cascade in cascades])
-	n_events_now = sum([len(cascade) for cascade in filtered_cascades])
-	logging.info (f'Number of cascades filtered from {len(cascades)} to {len(filtered_cascades)}')
-	logging.info (f'Number of events filtered from {n_events_before} to {n_events_now}')
+			history = [word_usage_distribution[word][y] for y in word_usage_distribution[word] if y < year and y in word_usage_distribution]
+			history = {paper_id: publication_years[paper_id] for items in history for paper_id, _ in items}
 
+			record = create_record (word, paper_id, year, num_innovations, history)
+			fout.write (f"{json.dumps (record)}\n")
 
-	idx, iidx = make_channels_map (filtered_cascades)
-	remapped_cascades = remap_cascades (filtered_cascades, idx)
-	formatted_cascades = format_cascades (remapped_cascades)
-
-	with open (args.output_pickle_file, 'wb') as fout: 
-		pickle.dump ((idx, iidx, formatted_cascades, innovs), fout)
-	logging.info (f'All relevant data dumped in {args.output_pickle_file}')
+	logging.info (f'All relevant data dumped in {args.output_counts_file}')
 
 if __name__ == "__main__":
 	main (readArgs ())
