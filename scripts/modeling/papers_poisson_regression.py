@@ -5,13 +5,38 @@ import pandas as pd
 from scipy import sparse
 import numpy as np
 from tqdm import tqdm
+import json
 
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Run a regression model on the counts data for papers")
-	parser.add_argument ("--counts-file", type=str, required=True, help="File contains counts of innovations for each paper")
+	parser.add_argument ("--input-file", type=str, required=True, help="File contains counts of innovations for each paper")
 	parser.add_argument ("--coefficients-file", type=str, required=True, help="File contains base rate and linguistic coefficients")
 	args = parser.parse_args ()
 	return args
+
+def read_paper_ids_from_file (filename):
+	paper_ids = set ()
+	with open (filename) as fin:
+		for line in fin:
+			js = json.loads (line.strip())
+			paper_ids.add (js["paper_id"])
+
+	idx = {paper_id: i for i, paper_id in enumerate (paper_ids)}
+	iidx = {i: paper_id for i, paper_id in enumerate (paper_ids)}
+	
+	return (idx, iidx)
+ 
+def read_innovations_from_file (filename):
+	innovs = set ()
+	with open (filename) as fin:
+		for line in fin:
+			js = json.loads (line.strip())
+			innovs.add (js["word"])
+
+	idx = {word:i for i, word in enumerate (innovs)}
+	iidx = {i:word for i, word in enumerate (innovs)}
+	
+	return (idx, iidx)
 
 def df_to_sparse (df, kernel_expansions):
 	def create_index (items):
@@ -47,6 +72,10 @@ def df_to_sparse (df, kernel_expansions):
 	return (innovs_idx, innovs_iidx), (papers_idx, papers_iidx), X.to_csr (),y
 
 def main (args):
+	papers_index = read_paper_ids_from_file (args.input_file)
+	innovs_index = read_innovations_from_file (args.input_file)
+	return
+
 	paper_counts = pd.read_csv (args.counts_file, sep="\t", names=["word", "year", "paper_id", "num_innovations"])
 	kernel_expansions = {i: np.exp (-i) for i in range (100)}
 	innovs_index, papers_index, X,y = df_to_sparse (paper_counts, kernel_expansions)
