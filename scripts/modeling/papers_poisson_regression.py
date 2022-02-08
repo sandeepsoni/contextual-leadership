@@ -38,47 +38,38 @@ def read_innovations_from_file (filename):
 	
 	return (idx, iidx)
 
-def df_to_sparse (df, kernel_expansions):
-	def create_index (items):
-		items = set (items)
-		idx = {item: i for i, item in enumerate (items)}
-		iidx = {i:item for i, item in enumerate (items)}
-		return (idx, iidx)
+def read_file_as_sparse_matrix (filename, papers_index, innovs_index):
+	kernel_expansions = {i: np.exp (-i) for i in range (100)}
+	pidx, piidx = papers_index
+	idx, iidx = innovs_index
+	nrows = len (papers_index) * len (innovs_index)
+	ncols = len (papers_index)
+	X = sparse.coo_matrix ((nrows, ncols))
+	y = np.zeros (nrows)
+	with open (filename) as fin:
+		for line in tqdm (fin):
+			js = json.loads (line.strip())
+			word = js["word"]
+			paper_id = js["paper_id"]
+			year = js["year"]
+			num_innovations = js["num_innovations"]
+			row = pidx[paper_id] * idx[word]
+			col = pidx[paper_id]
+			X[row, col] = 1.0
+			y[row] = num_innovations
+			offset = len (pidx)
+			for item in js["previous_papers"]:
+				pid = item["paper_id"]
+				t = item["year"]
+				X[row, offset + pidx[pid]] = kernel_expansions[int (year - t)]
 
-	innovs_idx, innovs_iidx = create_index ([item for item in df.word])
-	papers_idx, papers_iidx = create_index ([item for item in df.paper_id])
-
-	# create empty sparse matrix
-	X = sparse.dok_matrix((len(papers_idx)*len(innovs_idx), 2*len(papers_idx)), dtype=np.float32)
-	y = np.zeros (len(papers_idx)*len(innovs_idx))
-	for word in tqdm(innovs_idx):
-		individual_word_df = df[df.word == word]
-		for _, row in individual_word_df.iterrows():
-			innov = row["word"]
-			year = row["year"]
-			paper_id = row["paper_id"]
-			count = row["num_innovations"]
-			history = individual_word_df[individual_word_df.year < year]
-
-			row_num = innovs_idx[innov] * len (innovs_idx) + papers_idx[paper_id]
-			X[row_num,papers_idx[paper_id]] = 1 # base rate term
-			for _, past_row in history.iterrows():
-				past_paper_id = past_row["paper_id"]
-				past_year = past_row["year"]
-				X[row_num, len(papers_idx) + papers_idx[past_paper_id]] = kernel_expansions[year - past_year] # influence features
-
-			y[row_num] = count
-
-	return (innovs_idx, innovs_iidx), (papers_idx, papers_iidx), X.to_csr (),y
+	return X.to_csr (), y	
 
 def main (args):
 	papers_index = read_paper_ids_from_file (args.input_file)
 	innovs_index = read_innovations_from_file (args.input_file)
-	return
+	X,y = read_file_as_sparse_matrix (args.input_file, papers_index, innovs_index)
 
-	paper_counts = pd.read_csv (args.counts_file, sep="\t", names=["word", "year", "paper_id", "num_innovations"])
-	kernel_expansions = {i: np.exp (-i) for i in range (100)}
-	innovs_index, papers_index, X,y = df_to_sparse (paper_counts, kernel_expansions)
 	clf = linear_model.PoissonRegressor(fit_intercept=False, alpha=0, tol=1e-6, verbose=3)
 	clf.fit(X, y)
 	coeffs = clf.coef_
