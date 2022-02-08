@@ -63,7 +63,7 @@ def read_file_as_sparse_matrix (filename, papers_index, innovs_index):
 				t = item["year"]
 				X[row, offset + pidx[pid]] = kernel_expansions[int (year - t)]
 
-	return X.to_csr (), y	
+	return X.tocsr (), y	
 
 def main (args):
 	papers_index = read_paper_ids_from_file (args.input_file)
