@@ -42,8 +42,8 @@ def read_file_as_sparse_matrix (filename, papers_index, innovs_index):
 	kernel_expansions = {i: np.exp (-i) for i in range (100)}
 	pidx, piidx = papers_index
 	idx, iidx = innovs_index
-	nrows = len (papers_index) * len (innovs_index)
-	ncols = len (papers_index)
+	nrows = len (pidx) * len (idx)
+	ncols = len (pidx)
 	X = sparse.lil_matrix ((nrows, ncols))
 	y = np.zeros (nrows)
 	with open (filename) as fin:
