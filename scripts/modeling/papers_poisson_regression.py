@@ -44,7 +44,7 @@ def read_file_as_sparse_matrix (filename, papers_index, innovs_index):
 	idx, iidx = innovs_index
 	nrows = len (pidx) * len (idx)
 	ncols = len (pidx)
-	X = sparse.lil_matrix ((nrows, ncols))
+	X = sparse.lil_matrix ((nrows, 2*ncols))
 	y = np.zeros (nrows)
 	with open (filename) as fin:
 		for line in tqdm (fin):
