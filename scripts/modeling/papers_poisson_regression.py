@@ -10,6 +10,7 @@ import json
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Run a regression model on the counts data for papers")
 	parser.add_argument ("--input-file", type=str, required=True, help="File contains counts of innovations for each paper")
+	parser.add_argument ("--regularization", type=float, required=False, default=0.0, help="Regularization penalty")
 	parser.add_argument ("--coefficients-file", type=str, required=True, help="File contains base rate and linguistic coefficients")
 	args = parser.parse_args ()
 	return args
@@ -70,7 +71,7 @@ def main (args):
 	innovs_index = read_innovations_from_file (args.input_file)
 	X,y = read_file_as_sparse_matrix (args.input_file, papers_index, innovs_index)
 
-	clf = linear_model.PoissonRegressor(fit_intercept=False, alpha=0, tol=1e-6, verbose=3)
+	clf = linear_model.PoissonRegressor(fit_intercept=False, alpha=args.regularization, tol=1e-6, verbose=3)
 	clf.fit(X, y)
 	coeffs = clf.coef_
 	coefficients = list ()
