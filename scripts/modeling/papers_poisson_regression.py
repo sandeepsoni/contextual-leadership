@@ -21,7 +21,7 @@ def read_paper_ids_from_file (filename):
 	with open (filename) as fin:
 		for line in fin:
 			js = json.loads (line.strip())
-			paper_ids.add (js["paper_id"])
+			paper_ids.add (int (js["paper_id"]))
 
 	idx = {paper_id: i for i, paper_id in enumerate (paper_ids)}
 	iidx = {i: paper_id for i, paper_id in enumerate (paper_ids)}
@@ -85,9 +85,7 @@ def main (args):
 		coefficients.append ([paper_id, base_rate, influence])
 
 	output = pd.DataFrame (coefficients, columns=["paper_id", "base_rate", "influence"])
-	output.to_csv (args.coefficients_file, sep="\t", index=False, header=True)
-
-		
+	output.to_csv (args.coefficients_file, sep="\t", index=False, header=True)	
 
 if __name__ == "__main__":
 	main (readArgs ())
