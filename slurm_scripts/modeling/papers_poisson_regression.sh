@@ -7,7 +7,7 @@
 # Partition: choose the correct machine, and below you can specify the number of nodes and tasks. 
 # This is a magical mystery resolved by reading savio documentation or consulting with their help desk, e.g. https://docs-research-it.berkeley.edu/services/high-performance-computing/user-guide/hardware-config/
 
-#SBATCH --partition=savio3 
+#SBATCH --partition=savio3_bigmem 
 
 
 # All the other options
@@ -41,6 +41,6 @@ module load cuda/10.2
 hostname
 which python
 
-python papers_poisson_regression.py --counts-file $SCRATCH_DIR/data/cascades/paper.counts --coefficients-file $SCRATCH_DIR/data/experiments/001/paper_coefficients.tsv
+python papers_poisson_regression.py --paper-ids-file $SCRATCH_DIR/data/raw/s2orc_acl.p5.jsonl --input-file $SCRATCH_DIR/data/cascades/paper.counts.jsonl --coefficients-file $SCRATCH_DIR/data/experiments/002/paper_coefficients/0.tsv --regularization 0.0
 conda deactivate
 #source deactivate

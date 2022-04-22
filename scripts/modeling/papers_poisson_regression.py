@@ -69,6 +69,8 @@ def read_file_as_sparse_matrix (filename, papers_index, innovs_index):
 
 def main (args):
 	papers_index = read_paper_ids_from_file (args.paper_ids_file)
+	dirname = os.path.dirname (args.coefficients_file)
+	os.makedirs (dirname, exist_ok=True)
 	innovs_index = read_innovations_from_file (args.input_file)
 	X,y = read_file_as_sparse_matrix (args.input_file, papers_index, innovs_index)
 
