@@ -75,9 +75,9 @@ def main (args):
 	innovs_index = read_innovations_from_file (args.input_file)
 	X,y = read_file_as_sparse_matrix (args.input_file, papers_index, innovs_index)
 
-	clf = linear_model.PoissonRegressor(fit_intercept=False, alpha=args.regularization, tol=1e-6, verbose=3)
+	clf = linear_model.PoissonRegressor(fit_intercept=False, alpha=args.regularization, max_iter=500, tol=1e-6, verbose=3)
 	clf.fit(X, y)
-	print (clf.score(X,y))
+	print (f"Deviance: {clf.score(X,y)}")
 	coeffs = clf.coef_
 	coefficients = list ()
 	idx, iidx = papers_index
