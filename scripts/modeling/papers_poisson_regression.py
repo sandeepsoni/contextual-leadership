@@ -6,6 +6,7 @@ from scipy import sparse
 import numpy as np
 from tqdm import tqdm
 import json
+import os
 
 def readArgs ():
 	parser = argparse.ArgumentParser (description="Run a regression model on the counts data for papers")
