@@ -4,3 +4,4 @@
 * `filter_lang_and_year.py`: Filter the papers based on year range and the language id extracted from the full text
 * `acl_anthology_venue_scrape.py`: Get all the venues from the ACL Anthology website.
 * `makeOneFile.py`: Scrub some text; create a single file that contains text and additional metadata
+* `make_file_with_citations.py`: Create a file that contains the distribution of citations per year.

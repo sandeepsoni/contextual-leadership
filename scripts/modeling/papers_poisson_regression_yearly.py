@@ -13,36 +13,41 @@ def readArgs ():
 	parser.add_argument ("--paper-ids-file", type=str, required=True, help="File contains paper ids and other metadata")
 	parser.add_argument ("--input-file", type=str, required=True, help="File contains counts of innovations for each paper")
 	parser.add_argument ("--history-window", type=int, required=False, default=30, help="the history window that should be considered")
+	parser.add_argument ("--year", type=int, required=False, default=2019, help="consider papers before and up to this year")
 	parser.add_argument ("--regularization", type=float, required=False, default=0.0, help="Regularization penalty")
 	parser.add_argument ("--coefficients-file", type=str, required=True, help="File contains base rate and linguistic coefficients")
 	args = parser.parse_args ()
 	return args
 
-def read_paper_ids_from_file (filename):
+def read_paper_ids_from_file (filename, year=2019):
 	paper_ids = set ()
 	with open (filename) as fin:
 		for line in fin:
 			js = json.loads (line.strip())
-			paper_ids.add (int (js["paper_id"]))
+			y = js["metadata"]["year"]
+			if y <= year:
+				paper_ids.add (int (js["paper_id"]))
 
 	idx = {paper_id: i for i, paper_id in enumerate (paper_ids)}
 	iidx = {i: paper_id for i, paper_id in enumerate (paper_ids)}
 	
 	return (idx, iidx)
  
-def read_innovations_from_file (filename):
+def read_innovations_from_file (filename, year=2019):
 	innovs = set ()
 	with open (filename) as fin:
 		for line in fin:
 			js = json.loads (line.strip())
-			innovs.add (js["word"])
+			y = js["year"]
+			if y <= year:
+				innovs.add (js["word"])
 
 	idx = {word:i for i, word in enumerate (innovs)}
 	iidx = {i:word for i, word in enumerate (innovs)}
 	
 	return (idx, iidx)
 
-def read_file_as_sparse_matrix (filename, papers_index, innovs_index, history_window=3):
+def read_file_as_sparse_matrix (filename, papers_index, innovs_index, year=2019, history_window=3):
 	kernel_expansions = {i: np.exp (-i) for i in range (100)}
 	pidx, piidx = papers_index
 	idx, iidx = innovs_index
@@ -55,28 +60,40 @@ def read_file_as_sparse_matrix (filename, papers_index, innovs_index, history_wi
 			js = json.loads (line.strip())
 			word = js["word"]
 			paper_id = js["paper_id"]
-			year = js["year"]
+			yr = js["year"]
 			num_innovations = js["num_innovations"]
-			row = pidx[paper_id] * idx[word]
-			col = pidx[paper_id]
-			X[row, col] = 1.0
-			y[row] = num_innovations
-			offset = len (pidx)
-			for item in js["previous_papers"]:
-				pid = item["paper_id"]
-				t = item["year"]
-				if history_window >= (year-t):
-					X[row, offset + pidx[pid]] = kernel_expansions[int (year - t)]
+			if yr <= year:
+				row = pidx[paper_id] * idx[word]
+				col = pidx[paper_id]
+				X[row, col] = 1.0
+				y[row] = num_innovations
+				offset = len (pidx)
+				for item in js["previous_papers"]:
+					pid = item["paper_id"]
+					t = item["year"]
+					if history_window >= (yr-t):
+						X[row, offset + pidx[pid]] = kernel_expansions[int (yr - t)]
 
-	return X.tocsr (), y	
+	return X.tocsr (), y
+
+def read_years_from_file (filename):
+	paper2year = dict ()
+	with open (filename) as fin:
+		for line in fin:
+			js = json.loads (line.strip())
+			y = js["metadata"]["year"]
+			paper_id = int(js["paper_id"])
+			paper2year[paper_id] = y
+
+	return paper2year
 
 def main (args):
-	papers_index = read_paper_ids_from_file (args.paper_ids_file)
 	dirname = os.path.dirname (args.coefficients_file)
 	os.makedirs (dirname, exist_ok=True)
-	innovs_index = read_innovations_from_file (args.input_file)
-	X,y = read_file_as_sparse_matrix (args.input_file, papers_index, innovs_index, history_window=args.history_window)
-
+	papers_index = read_paper_ids_from_file (args.paper_ids_file, year=args.year)
+	paper2years = read_years_from_file (args.paper_ids_file)
+	innovs_index = read_innovations_from_file (args.input_file, year=args.year)
+	X,y = read_file_as_sparse_matrix (args.input_file, papers_index, innovs_index, year=args.year, history_window=args.history_window)
 	clf = linear_model.PoissonRegressor(fit_intercept=False, alpha=args.regularization, max_iter=500, tol=1e-6, verbose=3)
 	clf.fit(X, y)
 	print (f"Deviance: {clf.score(X,y)}")
@@ -87,11 +104,11 @@ def main (args):
 		paper_id = iidx[i]
 		base_rate = coeffs[i]
 		influence = coeffs[len(iidx) + i]
-		coefficients.append ([paper_id, base_rate, influence])
+		y = paper2years[paper_id]
+		coefficients.append ([paper_id, y, base_rate, influence])
 
-	output = pd.DataFrame (coefficients, columns=["paper_id", "base_rate", "influence"])
-	output.to_csv (args.coefficients_file, sep="\t", index=False, header=True)	
+	output = pd.DataFrame (coefficients, columns=["paper_id", "year", "base_rate", "influence"])
+	output.to_csv (args.coefficients_file, sep="\t", index=False, header=True)
 
 if __name__ == "__main__":
 	main (readArgs ())
-	

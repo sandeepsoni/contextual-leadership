@@ -41,6 +41,6 @@ module load cuda/10.2
 hostname
 which python
 
-python papers_poisson_regression.py --paper-ids-file $SCRATCH_DIR/data/raw/s2orc_acl.p5.jsonl --input-file $SCRATCH_DIR/data/cascades/paper.counts.jsonl --coefficients-file $SCRATCH_DIR/data/experiments/002/paper_coefficients/0.tsv --regularization 0.0
+python papers_poisson_regression.py --paper-ids-file $SCRATCH_DIR/data/raw/s2orc_acl.p5.jsonl --input-file $SCRATCH_DIR/data/cascades/paper.counts.jsonl --coefficients-file $SCRATCH_DIR/data/experiments/003/paper_coefficients/$REG_FILE.tsv --regularization $REG --history-window $HIST_WINDOW
 conda deactivate
 #source deactivate
