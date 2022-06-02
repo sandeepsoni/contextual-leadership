@@ -16,7 +16,8 @@ def main (args):
 	words = set ()
 	with open (args.innovs_file) as fin:
 		for line in fin:
-			words.add (line.strip())
+			parts = line.strip().split (",")
+			words.add (parts[0])
 
 	with open (args.counts_file, "w") as fout:
 		for word in words:

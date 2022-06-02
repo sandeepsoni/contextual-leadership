@@ -9,6 +9,7 @@ import sys
 import argparse
 import json
 import pandas as pd
+from tqdm import tqdm
 
 logging.basicConfig(
 	level=logging.INFO, 
@@ -85,7 +86,7 @@ def create_record (word, paper_id, year, num_innovations, history):
 	js["previous_papers"] = list ()
 	for key, value in history.items():
 		js["previous_papers"].append ({"paper_id": key,
-									   "year": value})
+						"year": value})
 
 	return js
 
@@ -108,7 +109,7 @@ def main (args):
 	word_usage_distribution = get_distribution (paper_counts)
 
 	with open (args.output_counts_file, "w") as fout:
-		for row_num, row in paper_counts.iterrows():
+		for row_num, row in tqdm (paper_counts.iterrows()):
 			year = row["year"]
 			word = row["word"] 
 			paper_id = row["paper_id"]
