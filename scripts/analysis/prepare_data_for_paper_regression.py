@@ -1,5 +1,5 @@
 """
-python prepare_data_for_paper_regression.py --citation-file /global/scratch/users/sandeepsoni/projects/hp-modeling/data/raw/s2orc_acl.citation_years.jsonl --sem-coefficients-dir /global/scratch/users/sandeepsoni/projects/hp-modeling/data/experiments/004/paper_coefficients/ --lex-coefficients-dir /global/scratch/users/sandeepsoni/projects/hp-modeling/data/experiments/004/paper_coefficients_for_lex_innovs/ --output-file /global/scratch/users/sandeepsoni/projects/hp-modeling/data/analysis/papers_regression_raw_data.tsv
+python prepare_data_for_paper_regression.py --citation-file /global/scratch/users/sandeepsoni/projects/hp-modeling/data/raw/s2orc_acl.citation_years.jsonl --sem-coefficients-dir /global/scratch/users/sandeepsoni/projects/hp-modeling/data/experiments/004/paper_coefficients/ --lex-coefficients-dir /global/scratch/users/sandeepsoni/projects/hp-modeling/data/experiments/004/paper_coefficients_for_lex_innovs/ --venues-file /global/scratch/users/sandeepsoni/projects/hp-modeling/data/raw/venues_shortform.tsv --output-file /global/scratch/users/sandeepsoni/projects/hp-modeling/data/analysis/papers_regression_raw_data.tsv
 """
 
 
@@ -18,6 +18,7 @@ def readArgs ():
 	parser.add_argument ("--sem-coefficients-dir", type=str, required=True, help="Directory that contains linguistic coefficients for semantic influence")
 	parser.add_argument ("--lex-coefficients-dir", type=str, required=True, help="Directory that contains linguistic coefficients for linguistic influence")
 	parser.add_argument ("--topics-file", type=str, required=True, help="File contains the topics for each paper")
+	parser.add_argument ("--venues-file", type=str, required=True, help="File contains the venues for each paper")
 	parser.add_argument ("--output-file", type=str, required=True, help="File contains the prepared data for subsequent regression")
 	parser.add_argument ("--num-topics", type=int, required=False, default=10, help="The number of topics")
 	parser.add_argument ("--k", type=int, required=False, default=2, help="offset in years")
@@ -111,7 +112,8 @@ def main (args):
 	sem_coeffs_df = read_ling_coefficients_as_df (args.sem_coefficients_dir, k=args.k, output_col_name="sem_influence") 
 	lex_coeffs_df = read_ling_coefficients_as_df (args.lex_coefficients_dir, k=args.k, output_col_name="lex_influence")
 	topics_df = read_topics_as_df (args.topics_file, num_topics=args.num_topics)
-	dataframes = [cites_df, sem_coeffs_df, lex_coeffs_df, topics_df]
+	venues_df = pd.read_csv (args.venues_filename, sep="\t")
+	dataframes = [cites_df, sem_coeffs_df, lex_coeffs_df, topics_df, venues_df]
 	overall_df = reduce (lambda left,right: pd.merge (left, right, how="inner", on="paper_id"), dataframes)
 	overall_df.to_csv (args.output_file, sep="\t", header=True, index=False)
 
