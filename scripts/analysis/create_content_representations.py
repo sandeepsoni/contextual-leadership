@@ -45,7 +45,7 @@ def make_dictionary (filename, max_batch_size=5000):
 
 def make_lda_model (filename, dictionary, num_topics=10, max_batch_size=5000):
 	batch = list ()
-	lda = LdaModel (num_topics=num_topics, id2word=dictionary, eta="symmetric")
+	lda = LdaModel (num_topics=num_topics, id2word=dictionary, eta="symmetric", random_state=42)
 	for _, bow in iter_bows (filename, dictionary):
 		if len (batch) < max_batch_size:
 			batch.append (bow)
@@ -72,6 +72,13 @@ def main (args):
 			js["bow"] = bow
 			js["topics"] = [(topic_id, str(prob)) for topic_id, prob in lda.get_document_topics (bow)]
 			fout.write (f"{json.dumps (js)}\n")
+
+	for i in range (args.num_topics):
+		topic_terms = lda.get_topic_terms (i, topn=10)
+		print (f"Topic {i}")
+		for term_id, prob in topic_terms:
+			print (dictionary[term_id], f"{prob:.3f}")
+		print ()
 	
 if __name__ == "__main__":
 	main (readArgs ())
